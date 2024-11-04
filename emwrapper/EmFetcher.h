@@ -28,7 +28,7 @@ namespace Em
         bool isDone() const;
         
         const char *data() const;
-        size_t dataSize() const;
+        std::size_t dataSize() const;
 
     private:
         static void onSuccess(emscripten_fetch_t *fetch);

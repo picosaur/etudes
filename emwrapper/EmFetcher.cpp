@@ -49,7 +49,7 @@ const char* Fetcher::data() const
     return fetch_->data;
 }
 
-size_t Fetcher::dataSize() const {
+std::size_t Fetcher::dataSize() const {
     return fetch_->numBytes;
 }
 
