@@ -3,7 +3,7 @@
 
 int main(int, char *[])
 {
-    gui::MainWindow mw;
+    Gui::MainWindow mw;
 
     return 0;
 }

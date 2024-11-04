@@ -5,7 +5,7 @@
 #include "EmFetcher.h"
 #include "Image.h"
 
-namespace gui
+namespace Gui
 {
     class FetchWidget::Impl
     {

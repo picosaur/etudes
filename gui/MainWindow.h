@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-namespace gui
+namespace Gui
 {
     class MainWindow
     {

@@ -2,7 +2,7 @@
 #include <imgui.h>
 #include <memory>
 
-namespace gui
+namespace Gui
 {
     class Image
     {

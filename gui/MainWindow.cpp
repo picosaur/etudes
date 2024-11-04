@@ -2,7 +2,7 @@
 #include <hello_imgui/hello_imgui.h>
 #include "FetchWidget.h"
 
-namespace gui
+namespace Gui
 {
 
     class MainWindow::Impl

@@ -2,7 +2,7 @@
 #include <stb_image.h>
 #include <hello_imgui/hello_imgui_include_opengl.h>
 
-namespace gui
+namespace Gui
 {
     class Image::Impl
     {
