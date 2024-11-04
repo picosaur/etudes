@@ -6,3 +6,10 @@
 libglfw3-dev
 libfreetype-dev
 ```
+
+### WASM
+```
+emcmake cmake ../imhello/
+emmake make
+emrun *.html
+```
