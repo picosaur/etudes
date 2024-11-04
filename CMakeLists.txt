@@ -1,9 +1,26 @@
 cmake_minimum_required(VERSION 3.13)  
-
 project(imhello VERSION 1.0.0)
-
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(vendor/hello_imgui)
+add_subdirectory(emwrapper)
+add_subdirectory(gui)
 
-hello_imgui_add_app(imhello src/main.cpp)
+hello_imgui_add_app(imhello app/main.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC gui)
+
+
+# if (EMSCRIPTEN)
+#     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -sUSE_GLFW=3 -sUSE_PTHREADS=1 -sALLOW_MEMORY_GROWTH=1)
+#     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -sTOTAL_MEMORY=134217728)
+#     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -sMAX_WEBGL_VERSION=2)
+#     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -sEXPORTED_RUNTIME_METHODS=ccall)
+#     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -sFETCH)
+#     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -sWASM_BIGINT)
+#     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -O1)
+#     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -sLEGACY_GL_EMULATION)
+#     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -fsanitize=null)
+#     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -fsanitize-minimal-runtime)
+#     target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE idbfs.js)
+# endif ()

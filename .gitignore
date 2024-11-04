@@ -1,6 +1,7 @@
 # imhello
+.vscode/*
 *.user
-build*
+build/*
 
 # Prerequisites
 *.d

@@ -1,0 +1,54 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "desktop-release",
+            "displayName": "desktop-release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/release",
+            "cacheVariables": {
+              "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+              "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install",
+              "CMAKE_BUILD_TYPE": "Release",
+              "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "YES",
+              "CXX_INSTALL_WASI_SYSROOT": "YES"
+            }
+        },
+        {
+            "inherits": "desktop-release",
+            "name": "desktop-debug",
+            "displayName": "desktop-debug",
+            "binaryDir": "${sourceDir}/build/debug",
+            "cacheVariables": {
+              "CMAKE_BUILD_TYPE": "Debug",
+              "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "NO"
+            }
+        },
+        {
+            "name": "emscripten",
+            "displayName": "emscripten",
+            "binaryDir": "${sourceDir}/build/emscripten",
+            "generator": "Ninja Multi-Config",
+            "toolchainFile": "/home/user/repo/va/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-desktop-release",
+            "configurePreset": "desktop-release"
+        },
+        {
+            "name": "build-desktop-debug",
+            "configurePreset": "desktop-debug"
+        },
+        {
+            "name": "build-emscripten",
+            "configurePreset": "emscripten"
+        }
+    ]
+}
