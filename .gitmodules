@@ -1,0 +1,3 @@
+[submodule "vendor/hello_imgui"]
+	path = vendor/hello_imgui
+	url = git@github.com:pthom/hello_imgui.git

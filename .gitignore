@@ -1,3 +1,7 @@
+# imhello
+*.user
+build*
+
 # Prerequisites
 *.d
 
