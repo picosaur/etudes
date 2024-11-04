@@ -34,7 +34,7 @@ namespace gui
 
         }
         if (impl_->image) {
-            ImGui::Image(impl_->image->textureId(), impl_->image->textureSize());
+            ImGui::Image(impl_->image->textureId(), impl_->image->size());
         }
         
         ImGui::InputTextMultiline("Data", &impl_->data);

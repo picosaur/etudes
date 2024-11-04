@@ -26,8 +26,8 @@ namespace Em
         ~Fetcher();
 
         bool isDone() const;
-        
-        const char *data() const;
+
+        const std::byte *data() const;
         std::size_t dataSize() const;
 
     private:

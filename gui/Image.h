@@ -11,16 +11,14 @@ namespace gui
 
     public:
         Image();
-        Image(const char *data, std::size_t size);
+        Image(const std::byte* data, std::size_t size);
         ~Image();
 
-        int width() const;
-        int height() const;
-
         ImTextureID textureId() const;
-        ImVec2 textureSize() const;
+        ImVec2 size() const;
 
     private:
         void loadTexture();
+        void freeTexture();
     };
 }

@@ -8,40 +8,37 @@ namespace gui
     {
     public:
         unsigned char *rgba{};
-        int width{};
-        int height{};
-        ImTextureID textureId{};
+        GLint width{};
+        GLint height{};
+        GLuint textureId{};
     };
 
     Image::Image() {}
 
-    Image::Image(const char *data, std::size_t size) : impl_{std::make_unique<Impl>()}
+    Image::Image(const std::byte *data, std::size_t size) : impl_{std::make_unique<Impl>()}
     {
         impl_->rgba = stbi_load_from_memory((unsigned char *)data, size, &impl_->width, &impl_->height, NULL, 4);
         loadTexture();
     }
 
-    Image::~Image() {}
-
-    int Image::width() const { return impl_->width; }
-
-    int Image::height() const { return impl_->height; }
+    Image::~Image() {
+        freeTexture();
+    }
 
     ImTextureID Image::textureId() const
     {
-        return impl_->textureId;
+        return (ImTextureID)(intptr_t)impl_->textureId;
     }
 
-    ImVec2 Image::textureSize() const
+    ImVec2 Image::size() const
     {
         return {(float)impl_->width, (float)impl_->height};
     }
 
     void Image::loadTexture()
     {
-        GLuint textureId{};
-        glGenTextures(1, &textureId);
-        glBindTexture(GL_TEXTURE_2D, textureId);
+        glGenTextures(1, &impl_->textureId);
+        glBindTexture(GL_TEXTURE_2D, impl_->textureId);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 #if defined(HELLOIMGUI_USE_GLES2) || defined(HELLOIMGUI_USE_GLES3)
@@ -52,6 +49,10 @@ namespace gui
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                      impl_->width,
                      impl_->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, impl_->rgba);
-        impl_->textureId = (ImTextureID)(intptr_t)textureId;
+    }
+
+    void Image::freeTexture() 
+    {
+        glDeleteTextures(1, &impl_->textureId);
     }
 }
