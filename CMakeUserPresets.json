@@ -18,7 +18,7 @@
               "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "YES",
               "CXX_INSTALL_WASI_SYSROOT": "YES"
             }
-        },
+        },  
         {
             "inherits": "desktop-release",
             "name": "desktop-debug",
@@ -34,7 +34,7 @@
             "displayName": "emscripten",
             "binaryDir": "${sourceDir}/build/emscripten",
             "generator": "Ninja Multi-Config",
-            "toolchainFile": "/home/user/repo/va/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+            "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
         }
     ],
     "buildPresets": [
@@ -48,7 +48,8 @@
         },
         {
             "name": "build-emscripten",
-            "configurePreset": "emscripten"
+            "configurePreset": "emscripten",
+            "configuration": "Release"
         }
     ]
 }
