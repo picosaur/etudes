@@ -7,5 +7,8 @@ add_subdirectory(external/hello_imgui)
 add_subdirectory(emwrapper)
 add_subdirectory(gui)
 
+set(HELLOIMGUI_USE_SDL2 ON CACHE BOOL "" FORCE)
+set(HELLOIMGUI_HAS_OPENGL3 ON CACHE BOOL "" FORCE)
+
 hello_imgui_add_app(imhello app/main.cpp)
 target_link_libraries(${PROJECT_NAME} PUBLIC gui)
