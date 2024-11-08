@@ -9,7 +9,6 @@ namespace ImMapPlot
     inline constexpr double RAD{PI / 180.0};
     inline constexpr double DEG{180.0 / PI};
     inline constexpr double R_EARTH{6371e3};
-    inline constexpr double RAD{PI / 180.0};
     inline constexpr int POW2[]{
         (1 << 0), (1 << 1), (1 << 2), (1 << 3), (1 << 4), (1 << 5), (1 << 6),
         (1 << 7), (1 << 8), (1 << 9), (1 << 10), (1 << 11), (1 << 12), (1 << 13),
@@ -29,5 +28,13 @@ namespace ImMapPlot
     void destination(double &lat, double &lon, double lat1, double lon1,
                      double d, double b);
     void cartesian(double &x, double &y, double lat, double lon, double lat0, double lon0);
+
+    class MapPlotWidget
+    {
+    public:
+        MapPlotWidget() {}
+
+        void show();
+    };
 
 }

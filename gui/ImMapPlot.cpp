@@ -1,4 +1,5 @@
 #include "ImMapPlot.h"
+#include <implot.h>
 
 namespace ImMapPlot
 {
@@ -98,5 +99,14 @@ namespace ImMapPlot
         const double dlon{lon - lon0};
         x = dlon * cos(lat / 2.0 + lat0 / 2.0) * R_EARTH;
         y = (lat - lat0) * R_EARTH;
+    }
+
+    void MapPlotWidget::show()
+    {
+
+        if (ImPlot::BeginPlot("MapPlot"))
+        {
+            ImPlot::EndPlot();
+        }
     }
 }

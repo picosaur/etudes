@@ -1,6 +1,8 @@
 #include "MainWindow.h"
 #include <hello_imgui/hello_imgui.h>
 #include "FetchWidget.h"
+#include "ImMapPlot.h"
+#include <implot.h>
 
 namespace Gui
 {
@@ -9,6 +11,7 @@ namespace Gui
     {
     public:
         FetchWidget fetchWidget;
+        ImMapPlot::MapPlotWidget mapPlotWidget;
     };
 
     MainWindow::MainWindow() : impl_{std::make_unique<Impl>()}
@@ -27,10 +30,14 @@ namespace Gui
         };
 
         runnerParams.dockingParams.dockableWindows = {
-            {"FetchWidget", "MainDockSpace", [&]() { 
-                impl_->fetchWidget.show();
-            }},
-        };
+            {"FetchWidget", "MainDockSpace", [&]()
+             {
+                 impl_->fetchWidget.show();
+             }},
+            {"MapPlotWidget", "MainDockSpace", [&]()
+             {
+                 impl_->mapPlotWidget.show();
+             }}};
 
         runnerParams.callbacks.ShowGui = [&]() {};
 
@@ -50,9 +57,9 @@ namespace Gui
         runnerParams.callbacks.ShowMenus = [&]
         { onShowMenus(); };
 
-        //ImPlot::CreateContext();
+        ImPlot::CreateContext();
         HelloImGui::Run(runnerParams);
-        //ImPlot::DestroyContext();
+        ImPlot::DestroyContext();
     }
 
     MainWindow::~MainWindow()
@@ -61,11 +68,9 @@ namespace Gui
 
     void MainWindow::onShowMenus()
     {
-
     }
 
     void MainWindow::onShowToolbar()
     {
-
     }
 }

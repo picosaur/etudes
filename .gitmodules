@@ -1,3 +1,6 @@
 [submodule "vendor/hello_imgui"]
 	path = external/hello_imgui
 	url = git@github.com:pthom/hello_imgui.git
+[submodule "external/implot"]
+	path = external/implot/implot
+	url = git@github.com:epezent/implot.git
