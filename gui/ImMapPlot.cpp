@@ -1,10 +1,30 @@
 #include "ImMapPlot.h"
 #include <implot.h>
+#include <algorithm>
+#include <implot_internal.h>
+#include <imgui_internal.h>
+#include <vector>
+#include <string>
 
 namespace ImMapPlot
 {
+    inline constexpr double PI{3.14159265358979323846};
+    inline constexpr double PI2{PI * 2.0};
+    inline constexpr double RAD{PI / 180.0};
+    inline constexpr double DEG{180.0 / PI};
+    inline constexpr double R_EARTH{6371e3};
+    inline constexpr int POW2[]{
+        (1 << 0), (1 << 1), (1 << 2), (1 << 3), (1 << 4), (1 << 5), (1 << 6),
+        (1 << 7), (1 << 8), (1 << 9), (1 << 10), (1 << 11), (1 << 12), (1 << 13),
+        (1 << 14), (1 << 15), (1 << 16), (1 << 17), (1 << 18)};
+    inline constexpr double MIN_LAT{-85.0};
+    inline constexpr double MAX_LAT{+85.0};
+    inline constexpr double MIN_LON{-179.9};
+    inline constexpr double MAX_LON{+179.9};
+    inline constexpr int MIN_ZOOM{0};
+    inline constexpr int MAX_ZOOM{18};
 
-    double dmsToDeg(double d, double m, const double s, const char nsew)
+    double dmsToDeg(double d, double m, double s, char nsew)
     {
         double deg{d + m / 60.0 + s / 3600.0};
         if (nsew == 'S' || nsew == 'W')
@@ -101,12 +121,184 @@ namespace ImMapPlot
         y = (lat - lat0) * R_EARTH;
     }
 
+    double lon2x(double lon, int z)
+    {
+        return (lon + 180.0) / 360.0 * double(POW2[z]);
+    }
+
+    double lat2y(double lat, int z)
+    {
+        return (1.0 - asinh(tan(lat * RAD)) / PI) / 2.0 * double(POW2[z]);
+    }
+
+    double x2lon(double x, int z)
+    {
+        return x / double(POW2[z]) * 360.0 - 180.0;
+    }
+
+    double y2lat(double y, int z)
+    {
+        const double n{PI - PI2 * y / double(POW2[z])};
+        return DEG * atan(0.5 * (exp(n) - exp(-n)));
+    }
+
+    int lon2tx(double lon, int z)
+    {
+        return int(floor(lon2x(lon, z)));
+    }
+
+    int lat2ty(double lat, int z)
+    {
+        return int(floor(lat2y(lat, z)));
+    }
+
+    // MapPlot
+    //-------------------------------------------------------------------------
+
+    bool BeginMapPlot(const char *title_id, const ImVec2 &size, ImPlotFlags flags)
+    {
+        return ImPlot::BeginPlot(title_id, size, flags);
+    }
+
+    void SetupMapPlot()
+    {
+        // ImPlot::SetupAxis(ImAxis_X1, nullptr, impl_->xFlags);
+        // ImPlot::SetupAxis(ImAxis_Y1, nullptr, impl_->yFlags);
+        ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, -1.0, 2.0);
+        return ImPlot::SetupFinish();
+    }
+
+    void EndMapPlot()
+    {
+        return ImPlot::EndPlot();
+    }
+
+    // Map
+    // ------------------------------------------------------------------------
+    class MapData
+    {
+    public:
+        std::vector<std::unique_ptr<std::string>> strings;
+
+        const char *addString(const std::string &s)
+        {
+            strings.push_back(std::make_unique<std::string>(s));
+            return strings.back()->c_str();
+        }
+    };
+
+    class MapContext
+    {
+        MapContext() {}
+
+    public:
+        MapContext(MapContext const &) = delete;
+        void operator=(MapContext const &) = delete;
+
+        static MapContext *Get()
+        {
+            static MapContext instance;
+            return &instance;
+        }
+
+        ImPool<MapData> maps;
+    };
+
+    std::string GetTileLabel(int tx, int ty, int tz)
+    {
+        return std::to_string(tx) + '/' + std::to_string(ty) + '/' + std::to_string(tz);
+    }
+
+    ImPlotPoint GetCenterPoint(const ImPlotPoint &p1, const ImPlotPoint &p2)
+    {
+        return {(p1.x + p2.x) / 2., (p1.y + p2.y) / 2.};
+    }
+
+    void PlotTileGrid(const char *label_id, float tileSize, ImU32 color, float thickness)
+    {
+        auto *mapCtx = MapContext::Get()->maps.GetOrAddByKey(ImGui::GetID(label_id));
+        mapCtx->strings.clear();
+
+        auto mousePos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
+        auto plotLims = ImPlot::GetPlotLimits(ImAxis_X1, ImAxis_Y1);
+        auto plotSize = ImPlot::GetPlotSize(); // pixels
+
+        auto resX = plotSize.x / plotLims.X.Size();
+        auto resY = plotSize.y / plotLims.Y.Size();
+
+        auto z = std::clamp(int(floor(log2(resX / tileSize))), MIN_ZOOM, MAX_ZOOM);
+        auto tilesNum = POW2[z];
+        auto tileSizeScaled = 1. / double(tilesNum);
+
+        auto minTX = std::clamp(int(plotLims.X.Min * tilesNum), 0, tilesNum - 1);
+        auto maxTX = std::clamp(int(plotLims.X.Max * tilesNum), 0, tilesNum - 1);
+        auto minTY = std::clamp(int(plotLims.Y.Min * tilesNum), 0, tilesNum - 1);
+        auto maxTY = std::clamp(int(plotLims.Y.Max * tilesNum), 0, tilesNum - 1);
+        
+        ImPlotPoint bmin{}, bmax{};
+        for (auto x{minTX}; x != maxTX + 1; ++x)
+        {
+            bmin.x = double(x) * tileSizeScaled;
+            bmax.x = double(x + 1) * tileSizeScaled;
+            for (auto y{minTY}; y != maxTY + 1; ++y)
+            {
+                bmin.y = double(y) * tileSizeScaled;
+                bmax.y = double(y + 1) * tileSizeScaled;
+                auto center = GetCenterPoint(bmin, bmax);
+                PlotRect("##", bmin, bmax, color);
+                ImPlot::PlotText(mapCtx->addString(GetTileLabel(x, y, z)), center.x, center.y);
+            }
+        }
+    }
+
+    void PlotRect(const char *label_id, ImPlotPoint bmin, ImPlotPoint bmax, ImU32 col, float rounding, ImDrawFlags flags, float thickness)
+    {
+        if (ImPlot::BeginItem(label_id))
+        {
+            ImDrawList &draw_list = *ImPlot::GetPlotDrawList();
+            ImVec2 p1 = ImPlot::PlotToPixels(bmin.x, bmax.y, IMPLOT_AUTO, IMPLOT_AUTO);
+            ImVec2 p2 = ImPlot::PlotToPixels(bmax.x, bmin.y, IMPLOT_AUTO, IMPLOT_AUTO);
+            ImPlot::PushPlotClipRect();
+            draw_list.AddRect(p1, p2, col);
+            ImPlot::PopPlotClipRect();
+            ImPlot::EndItem();
+        }
+    }
+
+    // Widget
+    //-------------------------------------------------------------------------
+    class MapPlotWidget::Impl
+    {
+    public:
+        ImPlotFlags plotFlags{PlotFlags};
+        ImPlotAxisFlags xFlags{AxisXFlags};
+        ImPlotAxisFlags yFlags{AxisYFlags};
+
+        ImVec2 uv0{0, 1}, uv1{1, 0};
+        ImVec4 tint{1, 1, 1, 1};
+
+        float tileSize{DefaultTileSize};
+
+        ImPlotPoint mousePos{};
+        ImPlotRect plotLims{};
+        ImVec2 plotSize{};
+
+        ImPlotPoint geoMousePos{};
+
+        std::vector<std::string> textBuf{};
+    };
+
+    MapPlotWidget::MapPlotWidget() : impl_{std::make_unique<Impl>()} {}
+
+    MapPlotWidget::~MapPlotWidget() {}
+
     void MapPlotWidget::show()
     {
-
-        if (ImPlot::BeginPlot("MapPlot"))
+        if (BeginMapPlot("MapPlot", {-1, -1}, impl_->plotFlags))
         {
-            ImPlot::EndPlot();
+            SetupMapPlot();
+            PlotTileGrid("MyGrid");
+            EndMapPlot();
         }
     }
 }
