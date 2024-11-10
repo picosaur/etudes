@@ -4,9 +4,6 @@
 
 namespace Em
 {
-
-    Fetcher::Fetcher() {}
-
     Fetcher::Fetcher(const std::string &url)
     {
         emscripten_fetch_attr_t attr;
@@ -37,6 +34,10 @@ namespace Em
     {
         printf("Downloading %s failed, HTTP failure status code: %d.\n", fetch->url, fetch->status);
         static_cast<Fetcher *>(fetch->userData)->state_ = fetch->readyState;
+    }
+
+    std::string Fetcher::url() const {
+        return fetch_->url;
     }
 
     bool Fetcher::isDone() const

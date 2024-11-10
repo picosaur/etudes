@@ -21,10 +21,10 @@ namespace Em
         std::atomic_int state_{0};
 
     public:
-        Fetcher();
         Fetcher(const std::string &url);
         ~Fetcher();
 
+        std::string url() const; 
         bool isDone() const;
 
         const std::byte *data() const;
