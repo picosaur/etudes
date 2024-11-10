@@ -41,37 +41,42 @@ namespace Gui
             return std::find_if(list_.begin(), list_.end(), cmp);
         }
 
-        auto insert(int x, int y, int z, std::unique_ptr<T> ptr)
+        auto insert(int x, int y, int z, T value)
         {
             auto it{list_.end()};
             if (it = find(x, y, z); it != end())
             {
-                it->value = std::move(ptr);
+                it->value = std::make_unique<T>(std::move(value));
             }
             else if (it = findEmpty(); it != end())
             {
-                (*it) = {.x = x, .y = y, .z = z, .value = std::move(ptr)};
+                (*it) = {.x = x, .y = y, .z = z, .value = std::make_unique<T>(std::move(value))};
             }
             else
             {
-                list_.push_back({.x = x, .y = y, .z = z, .value = std::move(ptr)});
+                list_.push_back({.x = x, .y = y, .z = z, .value = std::make_unique<T>(std::move(value))});
                 it = std::prev(list_.end());
             }
             return it;
         }
     };
 
-    using TileList = XyzList<ImImage>;
-
     using Fetcher = Em::Fetcher;
-    using FetcherList = XyzList<Fetcher>;
+    using Image = ImImage;
+
+    class TileListItem
+    {
+    public:
+        std::unique_ptr<Fetcher> fetcher;
+        std::unique_ptr<Image> image;
+    };
+    using TileList = XyzList<TileListItem>;
 
     class MapWidget::Impl
     {
     public:
         std::string tileUrl{"https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"};
         TileList tiles;
-        FetcherList fetchers;
     };
 
     MapWidget::MapWidget() : impl_{std::make_unique<Impl>()} {}
@@ -92,23 +97,20 @@ namespace Gui
 
     ImTextureID MapWidget::getTileTex(int x, int y, int z)
     {
-        if (auto it{impl_->tiles.find(x,y,z)}; it != impl_->tiles.end())
+        if (auto it{impl_->tiles.find(x, y, z)}; it != impl_->tiles.end())
         {
-            return it->value->textureId();
+            if (it->value->image) {
+                return it->value->image->textureId();
+            }
+            if (it->value->fetcher && it->value->fetcher->isDone()) {
+                it->value->image = std::make_unique<Image>(it->value->fetcher->data(), it->value->fetcher->dataSize());
+                it->value->fetcher = {};
+                return it->value->image->textureId();
+            }
+        } else {
+            impl_->tiles.insert(x,y,z, {.fetcher = std::make_unique<Fetcher>(getTileUrl(x,y,z))});
         }
 
-        if (auto it{impl_->fetchers.find(x,y,z)}; it != impl_->fetchers.end())
-        {
-            if (it->value->isDone())
-            {
-                auto jt = impl_->tiles.insert(x,y,z, std::make_unique<ImImage>(it->value->data(), it->value->dataSize()));
-                return jt->value->textureId();
-            }
-        }
-        else
-        {
-            impl_->fetchers.insert(x,y,z, std::make_unique<Fetcher>(getTileUrl(x,y,z)));
-        }
         return 0;
     }
 
