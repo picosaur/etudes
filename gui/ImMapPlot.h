@@ -1,8 +1,7 @@
 #include <imgui.h>
 #include <implot.h>
-#include <cmath>
-#include <numbers>
 #include <memory>
+#include <functional>
 
 namespace ImMapPlot
 {
@@ -40,19 +39,10 @@ namespace ImMapPlot
     void SetupMapPlot();
     void EndMapPlot();
 
+    using TileGetter = std::function<ImTextureID(int,int,int)>;
+    
+    void PlotMap(const char *label_id, const TileGetter &getter, float tileSize = DefaultTileSize, const ImVec2& uv0 = {0,1}, const ImVec2& uv1 = {1,0});
     void PlotTileGrid(const char *label_id, float tileSize = DefaultTileSize, ImU32 col = IM_COL32_WHITE, float thickness = 1.0f);
     void PlotRect(const char *label_id, ImPlotPoint bmin, ImPlotPoint bmax, ImU32 col, float rounding = 0.0f, ImDrawFlags flags = 0, float thickness = 1.0f);
-
-    class MapPlotWidget
-    {
-        class Impl;
-        std::unique_ptr<Impl> impl_;
-
-    public:
-        MapPlotWidget();
-        ~MapPlotWidget();
-
-        void show();
-    };
 
 }

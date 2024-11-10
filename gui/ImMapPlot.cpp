@@ -8,21 +8,22 @@
 
 namespace ImMapPlot
 {
-    inline constexpr double PI{3.14159265358979323846};
-    inline constexpr double PI2{PI * 2.0};
-    inline constexpr double RAD{PI / 180.0};
-    inline constexpr double DEG{180.0 / PI};
-    inline constexpr double R_EARTH{6371e3};
-    inline constexpr int POW2[]{
+    static constexpr double PI{3.14159265358979323846};
+    static constexpr double PI2{PI * 2.0};
+    static constexpr double RAD{PI / 180.0};
+    static constexpr double DEG{180.0 / PI};
+    static constexpr double R_EARTH{6371e3};
+    static constexpr double MIN_LAT{-85.0};
+    static constexpr double MAX_LAT{+85.0};
+    static constexpr double MIN_LON{-179.9};
+    static constexpr double MAX_LON{+179.9};
+    static constexpr int MIN_ZOOM{0};
+    static constexpr int MAX_ZOOM{18};
+
+    static constexpr int POW2[]{
         (1 << 0), (1 << 1), (1 << 2), (1 << 3), (1 << 4), (1 << 5), (1 << 6),
         (1 << 7), (1 << 8), (1 << 9), (1 << 10), (1 << 11), (1 << 12), (1 << 13),
         (1 << 14), (1 << 15), (1 << 16), (1 << 17), (1 << 18)};
-    inline constexpr double MIN_LAT{-85.0};
-    inline constexpr double MAX_LAT{+85.0};
-    inline constexpr double MIN_LON{-179.9};
-    inline constexpr double MAX_LON{+179.9};
-    inline constexpr int MIN_ZOOM{0};
-    inline constexpr int MAX_ZOOM{18};
 
     double dmsToDeg(double d, double m, double s, char nsew)
     {
@@ -165,6 +166,9 @@ namespace ImMapPlot
         // ImPlot::SetupAxis(ImAxis_X1, nullptr, impl_->xFlags);
         // ImPlot::SetupAxis(ImAxis_Y1, nullptr, impl_->yFlags);
         ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, -1.0, 2.0);
+
+        ImPlot::GetInputMap().ZoomRate = 0.1;
+
         return ImPlot::SetupFinish();
     }
 
@@ -178,12 +182,12 @@ namespace ImMapPlot
     class MapData
     {
     public:
-        std::vector<std::unique_ptr<std::string>> strings;
+        std::vector<std::unique_ptr<std::string>> tileGridStrings;
 
         const char *addString(const std::string &s)
         {
-            strings.push_back(std::make_unique<std::string>(s));
-            return strings.back()->c_str();
+            tileGridStrings.push_back(std::make_unique<std::string>(s));
+            return tileGridStrings.back()->c_str();
         }
     };
 
@@ -204,6 +208,34 @@ namespace ImMapPlot
         ImPool<MapData> maps;
     };
 
+    class MapGeom
+    {
+    public:
+        MapGeom(double tileSize)
+        {
+            plotLims = ImPlot::GetPlotLimits(ImAxis_X1, ImAxis_Y1);
+            plotSize = ImPlot::GetPlotSize(); // pixels
+
+            tileRes = std::max(plotSize.x / plotLims.X.Size(), plotSize.y / plotLims.Y.Size());
+            zoom = std::clamp(int(floor(log2(tileRes / tileSize))), MIN_ZOOM, MAX_ZOOM);
+            tilesNum = POW2[zoom];
+            tileSizeScaled = 1. / double(tilesNum);
+
+            minTX = std::clamp(int(plotLims.X.Min * tilesNum), 0, tilesNum - 1);
+            maxTX = std::clamp(int(plotLims.X.Max * tilesNum), 0, tilesNum - 1);
+            minTY = std::clamp(int(plotLims.Y.Min * tilesNum), 0, tilesNum - 1);
+            maxTY = std::clamp(int(plotLims.Y.Max * tilesNum), 0, tilesNum - 1);
+        }
+
+        ImPlotRect plotLims{};
+        ImVec2 plotSize{};
+        double tileRes{};
+        int zoom{};
+        int tilesNum{};
+        double tileSizeScaled{};
+        int minTX{}, maxTX{}, minTY{}, maxTY{};
+    };
+
     std::string GetTileLabel(int tx, int ty, int tz)
     {
         return std::to_string(tx) + '/' + std::to_string(ty) + '/' + std::to_string(tz);
@@ -214,39 +246,43 @@ namespace ImMapPlot
         return {(p1.x + p2.x) / 2., (p1.y + p2.y) / 2.};
     }
 
+    void PlotMap(const char *label_id, const TileGetter &getter, float tileSize, const ImVec2 &uv0, const ImVec2 &uv1)
+    {
+        auto *mapCtx = MapContext::Get()->maps.GetOrAddByKey(ImGui::GetID(label_id));
+        auto mapGeom = MapGeom(tileSize);
+
+        ImPlotPoint bmin{}, bmax{};
+        for (auto x{mapGeom.minTX}; x < mapGeom.maxTX + 1; ++x)
+        {
+            bmin.x = double(x) * mapGeom.tileSizeScaled;
+            bmax.x = double(x + 1) * mapGeom.tileSizeScaled;
+            for (auto y{mapGeom.minTY}; y != mapGeom.maxTY + 1; ++y)
+            {
+                bmin.y = double(y) * mapGeom.tileSizeScaled;
+                bmax.y = double(y + 1) * mapGeom.tileSizeScaled;
+                ImPlot::PlotImage("##", getter(x, y, mapGeom.zoom), bmin, bmax);
+            }
+        }
+    }
+
     void PlotTileGrid(const char *label_id, float tileSize, ImU32 color, float thickness)
     {
         auto *mapCtx = MapContext::Get()->maps.GetOrAddByKey(ImGui::GetID(label_id));
-        mapCtx->strings.clear();
+        mapCtx->tileGridStrings.clear();
+        auto mapGeom = MapGeom(tileSize);
 
-        auto mousePos = ImPlot::GetPlotMousePos(ImAxis_X1, ImAxis_Y1);
-        auto plotLims = ImPlot::GetPlotLimits(ImAxis_X1, ImAxis_Y1);
-        auto plotSize = ImPlot::GetPlotSize(); // pixels
-
-        auto resX = plotSize.x / plotLims.X.Size();
-        auto resY = plotSize.y / plotLims.Y.Size();
-
-        auto z = std::clamp(int(floor(log2(resX / tileSize))), MIN_ZOOM, MAX_ZOOM);
-        auto tilesNum = POW2[z];
-        auto tileSizeScaled = 1. / double(tilesNum);
-
-        auto minTX = std::clamp(int(plotLims.X.Min * tilesNum), 0, tilesNum - 1);
-        auto maxTX = std::clamp(int(plotLims.X.Max * tilesNum), 0, tilesNum - 1);
-        auto minTY = std::clamp(int(plotLims.Y.Min * tilesNum), 0, tilesNum - 1);
-        auto maxTY = std::clamp(int(plotLims.Y.Max * tilesNum), 0, tilesNum - 1);
-        
         ImPlotPoint bmin{}, bmax{};
-        for (auto x{minTX}; x != maxTX + 1; ++x)
+        for (auto x{mapGeom.minTX}; x < mapGeom.maxTX + 1; ++x)
         {
-            bmin.x = double(x) * tileSizeScaled;
-            bmax.x = double(x + 1) * tileSizeScaled;
-            for (auto y{minTY}; y != maxTY + 1; ++y)
+            bmin.x = double(x) * mapGeom.tileSizeScaled;
+            bmax.x = double(x + 1) * mapGeom.tileSizeScaled;
+            for (auto y{mapGeom.minTY}; y != mapGeom.maxTY + 1; ++y)
             {
-                bmin.y = double(y) * tileSizeScaled;
-                bmax.y = double(y + 1) * tileSizeScaled;
+                bmin.y = double(y) * mapGeom.tileSizeScaled;
+                bmax.y = double(y + 1) * mapGeom.tileSizeScaled;
                 auto center = GetCenterPoint(bmin, bmax);
                 PlotRect("##", bmin, bmax, color);
-                ImPlot::PlotText(mapCtx->addString(GetTileLabel(x, y, z)), center.x, center.y);
+                ImPlot::PlotText(mapCtx->addString(GetTileLabel(x, y, mapGeom.zoom)), center.x, center.y);
             }
         }
     }
@@ -262,43 +298,6 @@ namespace ImMapPlot
             draw_list.AddRect(p1, p2, col);
             ImPlot::PopPlotClipRect();
             ImPlot::EndItem();
-        }
-    }
-
-    // Widget
-    //-------------------------------------------------------------------------
-    class MapPlotWidget::Impl
-    {
-    public:
-        ImPlotFlags plotFlags{PlotFlags};
-        ImPlotAxisFlags xFlags{AxisXFlags};
-        ImPlotAxisFlags yFlags{AxisYFlags};
-
-        ImVec2 uv0{0, 1}, uv1{1, 0};
-        ImVec4 tint{1, 1, 1, 1};
-
-        float tileSize{DefaultTileSize};
-
-        ImPlotPoint mousePos{};
-        ImPlotRect plotLims{};
-        ImVec2 plotSize{};
-
-        ImPlotPoint geoMousePos{};
-
-        std::vector<std::string> textBuf{};
-    };
-
-    MapPlotWidget::MapPlotWidget() : impl_{std::make_unique<Impl>()} {}
-
-    MapPlotWidget::~MapPlotWidget() {}
-
-    void MapPlotWidget::show()
-    {
-        if (BeginMapPlot("MapPlot", {-1, -1}, impl_->plotFlags))
-        {
-            SetupMapPlot();
-            PlotTileGrid("MyGrid");
-            EndMapPlot();
         }
     }
 }

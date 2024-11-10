@@ -1,17 +1,17 @@
 #include "MainWindow.h"
 #include <hello_imgui/hello_imgui.h>
 #include "FetchWidget.h"
+#include "MapWidget.h"
 #include "ImMapPlot.h"
 #include <implot.h>
 
 namespace Gui
 {
-
     class MainWindow::Impl
     {
     public:
         FetchWidget fetchWidget;
-        ImMapPlot::MapPlotWidget mapPlotWidget;
+        MapWidget mapWidget;
     };
 
     MainWindow::MainWindow() : impl_{std::make_unique<Impl>()}
@@ -34,9 +34,9 @@ namespace Gui
              {
                  impl_->fetchWidget.show();
              }},
-            {"MapPlotWidget", "MainDockSpace", [&]()
+            {"MapWidget", "MainDockSpace", [&]()
              {
-                 impl_->mapPlotWidget.show();
+                 impl_->mapWidget.show();
              }}};
 
         runnerParams.callbacks.ShowGui = [&]() {};
