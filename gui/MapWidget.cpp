@@ -115,10 +115,6 @@ namespace Gui
     std::string MapWidget::getTileUrl(int x, int y, int z)
     {
         std::string url{impl_->tileUrl};
-        if (auto pos_z{url.find("{z}")}; pos_z < url.size())
-        {
-            url.replace(pos_z, 3, std::to_string(z));
-        }
         if (auto pos_x{url.find("{x}")}; pos_x < url.size())
         {
             url.replace(pos_x, 3, std::to_string(x));
@@ -126,6 +122,10 @@ namespace Gui
         if (auto pos_y{url.find("{y}")}; pos_y < url.size())
         {
             url.replace(pos_y, 3, std::to_string(y));
+        }
+        if (auto pos_z{url.find("{z}")}; pos_z < url.size())
+        {
+            url.replace(pos_z, 3, std::to_string(z));
         }
         return url;
     }

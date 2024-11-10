@@ -36,7 +36,7 @@ namespace ImMapPlot
     static constexpr float DefaultTileSize{256.f};
 
     bool BeginMapPlot(const char *title_id, const ImVec2 &size = {-1.f, -1.f}, ImPlotFlags flags = PlotFlags);
-    void SetupMapPlot();
+    void SetupMapPlot(ImPlotAxisFlags xFlags = ImPlotAxisFlags_None, ImPlotAxisFlags yFlags = ImPlotAxisFlags_Invert);
     void EndMapPlot();
 
     using TileGetter = std::function<ImTextureID(int,int,int)>;

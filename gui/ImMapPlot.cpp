@@ -161,14 +161,12 @@ namespace ImMapPlot
         return ImPlot::BeginPlot(title_id, size, flags);
     }
 
-    void SetupMapPlot()
+    void SetupMapPlot(ImPlotAxisFlags xFlags, ImPlotAxisFlags yFlags)
     {
-        // ImPlot::SetupAxis(ImAxis_X1, nullptr, impl_->xFlags);
-        // ImPlot::SetupAxis(ImAxis_Y1, nullptr, impl_->yFlags);
+        ImPlot::SetupAxis(ImAxis_X1, nullptr, xFlags);
+        ImPlot::SetupAxis(ImAxis_Y1, nullptr, yFlags);
         ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, -1.0, 2.0);
-
         ImPlot::GetInputMap().ZoomRate = 0.1;
-
         return ImPlot::SetupFinish();
     }
 
@@ -238,7 +236,7 @@ namespace ImMapPlot
 
     std::string GetTileLabel(int tx, int ty, int tz)
     {
-        return std::to_string(tx) + '/' + std::to_string(ty) + '/' + std::to_string(tz);
+        return std::to_string(tz) + '/' + std::to_string(tx) + '/' + std::to_string(ty);
     }
 
     ImPlotPoint GetCenterPoint(const ImPlotPoint &p1, const ImPlotPoint &p2)
@@ -260,7 +258,7 @@ namespace ImMapPlot
             {
                 bmin.y = double(y) * mapGeom.tileSizeScaled;
                 bmax.y = double(y + 1) * mapGeom.tileSizeScaled;
-                ImPlot::PlotImage("##", getter(x, y, mapGeom.zoom), bmin, bmax);
+                ImPlot::PlotImage("##", getter(x, y, mapGeom.zoom), bmin, bmax, uv0, uv1);
             }
         }
     }
