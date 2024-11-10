@@ -5,6 +5,8 @@
 
 namespace ImMapPlot
 {
+    // Coordinates
+    // ------------------------------------------------------------------------
     double dmsToDeg(double d, double m, double s, char nsew);
     double distance(double lat1, double lon1, double lat2, double lon2);
     double bearing(double lat1, double lon1, double lat2, double lon2);
@@ -22,7 +24,15 @@ namespace ImMapPlot
     double y2lat(double y, int z = 0);
     int lon2tx(double lon, int z = 0);
     int lat2ty(double lat, int z = 0);
+    
+    // Helpers
+    // ------------------------------------------------------------------------
+    std::string GetTileLabel(int x, int y, int z);
+    std::string GetTileUrl(int x, int y, int z, const std::string& baseUrl = "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png");
+    ImPlotPoint GetCenterPoint(const ImPlotPoint &p1, const ImPlotPoint &p2);
 
+    // MapPlot
+    // ------------------------------------------------------------------------
     static constexpr ImPlotFlags PlotFlags{ImPlotFlags_Equal | ImPlotFlags_NoLegend};
 
     static constexpr ImPlotAxisFlags AxisXFlags{
@@ -40,7 +50,7 @@ namespace ImMapPlot
     void EndMapPlot();
 
     using TileGetter = std::function<ImTextureID(int,int,int)>;
-    
+
     void PlotMap(const char *label_id, const TileGetter &getter, float tileSize = DefaultTileSize, const ImVec2& uv0 = {0,1}, const ImVec2& uv1 = {1,0});
     void PlotTileGrid(const char *label_id, float tileSize = DefaultTileSize, ImU32 col = IM_COL32_WHITE, float thickness = 1.0f);
     void PlotRect(const char *label_id, ImPlotPoint bmin, ImPlotPoint bmax, ImU32 col, float rounding = 0.0f, ImDrawFlags flags = 0, float thickness = 1.0f);

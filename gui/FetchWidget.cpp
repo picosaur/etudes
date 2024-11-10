@@ -12,8 +12,9 @@ namespace Gui
     public:
         std::string url{"https://a.tile.openstreetmap.org/0/0/0.png"};
         std::unique_ptr<Em::Fetcher> fetcher;
+        std::string status;
         std::unique_ptr<ImImage> image;
-        std::string data;
+        std::string text;
     };
 
     FetchWidget::FetchWidget() : impl_{std::make_unique<Impl>()} {}
@@ -24,19 +25,22 @@ namespace Gui
         ImGui::InputText("URL", &impl_->url);
         ImGui::SameLine();
         if (ImGui::Button("Fetch")) {
+            impl_->status = {};
+            impl_->text = {};
+            impl_->image = {};
             impl_->fetcher = std::make_unique<Em::Fetcher>(impl_->url);
         }
         if (impl_->fetcher && impl_->fetcher->isDone()) {
-            impl_->data = {};
-            //impl_->data.assign(impl_->fetcher->data(), impl_->fetcher->data() + impl_->fetcher->dataSize());
+            impl_->status = impl_->fetcher->statusText();
+            impl_->fetcher->assign(impl_->text);
             impl_->image = std::make_unique<ImImage>(impl_->fetcher->data(), (int)impl_->fetcher->dataSize());
             impl_->fetcher = {};
 
         }
+        ImGui::InputText("Status", &impl_->status);
         if (impl_->image) {
             ImGui::Image(impl_->image->textureId(), impl_->image->size());
         }
-        
-        ImGui::InputTextMultiline("Data", &impl_->data);
+        ImGui::InputTextMultiline("Text", &impl_->text);
     }
 }

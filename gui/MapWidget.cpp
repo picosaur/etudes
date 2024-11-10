@@ -76,6 +76,7 @@ namespace Gui
     {
     public:
         std::string tileUrl{"https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"};
+        //std::string tileUrl{"https://t2.openseamap.org/tile/{z}/{x}/{y}.png"};
         TileList tiles;
     };
 
@@ -97,7 +98,7 @@ namespace Gui
 
     ImTextureID MapWidget::getTileTex(int x, int y, int z)
     {
-        if (auto it{impl_->tiles.find(x, y, z)}; it != impl_->tiles.end())
+        if (auto it{impl_->tiles.find(x,y,z)}; it != impl_->tiles.end())
         {
             if (it->value->image) {
                 return it->value->image->textureId();
@@ -108,27 +109,9 @@ namespace Gui
                 return it->value->image->textureId();
             }
         } else {
-            impl_->tiles.insert(x,y,z, {.fetcher = std::make_unique<Fetcher>(getTileUrl(x,y,z))});
+            impl_->tiles.insert(x,y,z, {.fetcher = std::make_unique<Fetcher>(ImMapPlot::GetTileUrl(x,y,z, impl_->tileUrl))});
         }
 
         return 0;
-    }
-
-    std::string MapWidget::getTileUrl(int x, int y, int z)
-    {
-        std::string url{impl_->tileUrl};
-        if (auto pos_x{url.find("{x}")}; pos_x < url.size())
-        {
-            url.replace(pos_x, 3, std::to_string(x));
-        }
-        if (auto pos_y{url.find("{y}")}; pos_y < url.size())
-        {
-            url.replace(pos_y, 3, std::to_string(y));
-        }
-        if (auto pos_z{url.find("{z}")}; pos_z < url.size())
-        {
-            url.replace(pos_z, 3, std::to_string(z));
-        }
-        return url;
     }
 }

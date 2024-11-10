@@ -152,6 +152,36 @@ namespace ImMapPlot
     {
         return int(floor(lat2y(lat, z)));
     }
+    
+    // Helpers
+    //-------------------------------------------------------------------------
+    std::string GetTileUrl(int x, int y, int z, const std::string &baseUrl)
+    {
+        auto url{baseUrl};
+        if (auto pos_x{url.find("{x}")}; pos_x < url.size())
+        {
+            url.replace(pos_x, 3, std::to_string(x));
+        }
+        if (auto pos_y{url.find("{y}")}; pos_y < url.size())
+        {
+            url.replace(pos_y, 3, std::to_string(y));
+        }
+        if (auto pos_z{url.find("{z}")}; pos_z < url.size())
+        {
+            url.replace(pos_z, 3, std::to_string(z));
+        }
+        return url;
+    }
+
+    std::string GetTileLabel(int tx, int ty, int tz)
+    {
+        return std::to_string(tz) + '/' + std::to_string(tx) + '/' + std::to_string(ty);
+    }
+
+    ImPlotPoint GetCenterPoint(const ImPlotPoint &p1, const ImPlotPoint &p2)
+    {
+        return {(p1.x + p2.x) / 2., (p1.y + p2.y) / 2.};
+    }
 
     // MapPlot
     //-------------------------------------------------------------------------
@@ -166,7 +196,7 @@ namespace ImMapPlot
         ImPlot::SetupAxis(ImAxis_X1, nullptr, xFlags);
         ImPlot::SetupAxis(ImAxis_Y1, nullptr, yFlags);
         ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, -1.0, 2.0);
-        ImPlot::GetInputMap().ZoomRate = 0.1;
+        ImPlot::GetInputMap().ZoomRate = 0.25;
         return ImPlot::SetupFinish();
     }
 
@@ -175,8 +205,6 @@ namespace ImMapPlot
         return ImPlot::EndPlot();
     }
 
-    // Map
-    // ------------------------------------------------------------------------
     class MapData
     {
     public:
@@ -233,16 +261,6 @@ namespace ImMapPlot
         double tileSizeScaled{};
         int minTX{}, maxTX{}, minTY{}, maxTY{};
     };
-
-    std::string GetTileLabel(int tx, int ty, int tz)
-    {
-        return std::to_string(tz) + '/' + std::to_string(tx) + '/' + std::to_string(ty);
-    }
-
-    ImPlotPoint GetCenterPoint(const ImPlotPoint &p1, const ImPlotPoint &p2)
-    {
-        return {(p1.x + p2.x) / 2., (p1.y + p2.y) / 2.};
-    }
 
     void PlotMap(const char *label_id, const TileGetter &getter, float tileSize, const ImVec2 &uv0, const ImVec2 &uv1)
     {

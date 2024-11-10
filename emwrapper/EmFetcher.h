@@ -1,6 +1,9 @@
 #pragma once
+#include <memory>
 #include <string>
 #include <atomic>
+#include <unordered_map>
+#include <vector>
 
 // REFERENCES
 // https://emscripten.org/docs/api_reference/fetch.html
@@ -9,26 +12,25 @@ class emscripten_fetch_t;
 
 namespace Em
 {
+    using FetchHeaders = std::unordered_map<std::string, std::string>;
+
     class Fetcher
     {
-        emscripten_fetch_t *fetch_{};
-
-        // 0: UNSENT: request not sent yet
-        // 1: OPENED: emscripten_fetch has been called.
-        // 2: HEADERS_RECEIVED: emscripten_fetch has been called
-        // 3: LOADING: download in progress.
-        // 4: DONE: download finished.
-        std::atomic_int state_{0};
+        class Impl;
+        std::unique_ptr<Impl> impl_;
 
     public:
-        Fetcher(const std::string &url);
+        Fetcher(const std::string &url, const FetchHeaders &headers = {});
         ~Fetcher();
 
         std::string url() const; 
+        std::string statusText() const;
         bool isDone() const;
 
         const std::byte *data() const;
         std::size_t dataSize() const;
+
+        void assign(std::string &text) const;
 
     private:
         static void onSuccess(emscripten_fetch_t *fetch);
