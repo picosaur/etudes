@@ -1,6 +1,6 @@
 #include "MiImage.h"
 #include <stb_image.h>
-#include <hello_imgui/hello_imgui_include_opengl.h>
+#include <MiGL.h>
 
 namespace Mi
 {

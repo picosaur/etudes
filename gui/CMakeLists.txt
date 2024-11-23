@@ -10,8 +10,4 @@ add_library(${PROJECT_NAME} ${GUI_SRC} ${IMPLOT_SRC})
 
 target_include_directories (${PROJECT_NAME} PUBLIC .)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC 
-    imgui
-    implot
-    hello_imgui
-    emwrapper)
+target_link_libraries(${PROJECT_NAME} PUBLIC mi)

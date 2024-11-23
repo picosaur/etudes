@@ -7,6 +7,7 @@ add_subdirectory(external/hello_imgui)
 add_subdirectory(external/implot)
 add_subdirectory(emwrapper)
 add_subdirectory(gui)
+add_subdirectory(mi)
 
 set(HELLOIMGUI_USE_SDL2 ON CACHE BOOL "" FORCE)
 set(HELLOIMGUI_HAS_OPENGL3 ON CACHE BOOL "" FORCE)

@@ -6,158 +6,10 @@
 #include <vector>
 #include <string>
 
-// REFERENCES
-// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
-
 namespace Mi
 {
     namespace MapPlot
     {
-        static constexpr double PI{3.14159265358979323846};
-        static constexpr double PI2{PI * 2.0};
-        static constexpr double RAD{PI / 180.0};
-        static constexpr double DEG{180.0 / PI};
-        static constexpr double R_EARTH{6371e3};
-        static constexpr double MIN_LAT{-85.0};
-        static constexpr double MAX_LAT{+85.0};
-        static constexpr double MIN_LON{-179.9};
-        static constexpr double MAX_LON{+179.9};
-        static constexpr int MIN_ZOOM{0};
-        static constexpr int MAX_ZOOM{18};
-
-        static constexpr int POW2[]{
-            (1 << 0), (1 << 1), (1 << 2), (1 << 3), (1 << 4), (1 << 5), (1 << 6),
-            (1 << 7), (1 << 8), (1 << 9), (1 << 10), (1 << 11), (1 << 12), (1 << 13),
-            (1 << 14), (1 << 15), (1 << 16), (1 << 17), (1 << 18)};
-
-        double dmsToDeg(double d, double m, double s, char nsew)
-        {
-            double deg{d + m / 60.0 + s / 3600.0};
-            if (nsew == 'S' || nsew == 'W')
-            {
-                deg = -deg;
-            }
-            return deg;
-        }
-
-        double distance(double lat1, double lon1, double lat2, double lon2)
-        {
-            lat1 *= RAD;
-            lon1 *= RAD;
-            lat2 *= RAD;
-            lon2 *= RAD;
-
-            const double dlat{(lat2 - lat1) / 2.0};
-            const double dlon{(lon2 - lon1) / 2.0};
-            const double a{sin(dlat) * sin(dlat) +
-                           cos(lat1) * cos(lat2) * sin(dlon) * sin(dlon)};
-            const double c{2.0 * atan2(sqrt(a), sqrt(1.0 - a))};
-            const double d{R_EARTH * c};
-
-            return d;
-        }
-
-        double bearing(double lat1, double lon1, double lat2, double lon2)
-        {
-            lat1 *= RAD;
-            lon1 *= RAD;
-            lat2 *= RAD;
-            lon2 *= RAD;
-
-            const double dlon{lon2 - lon1};
-            const double x{cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dlon)};
-            const double y{sin(dlon) * cos(lat2)};
-            const double th{atan2(y, x)};
-            const double b{fmod(th * DEG + 360.0, 360.0)};
-
-            return b;
-        }
-
-        void midpoint(double &lat, double &lon, double lat1, double lon1,
-                      double lat2, double lon2)
-        {
-            lat1 *= RAD;
-            lon1 *= RAD;
-            lat2 *= RAD;
-            lon2 *= RAD;
-
-            const double dlon{lon2 - lon1};
-            const double Bx = cos(lat2) * cos(dlon);
-            const double By = cos(lat2) * sin(dlon);
-            const double y = sin(lat1) + sin(lat2);
-            const double x = sqrt((cos(lat1) + Bx) * (cos(lat1) + Bx) + By * By);
-            lat = atan2(y, x);
-            lon = lon1 + atan2(By, cos(lat1) + Bx);
-
-            lat *= DEG;
-            lon *= DEG;
-            lon = fmod(lon + 540.0, 360.0) - 180.0;
-        }
-
-        void destination(double &lat, double &lon, double lat1, double lon1,
-                         double d, double b)
-        {
-
-            lat1 *= RAD;
-            lon1 *= RAD;
-            b *= RAD;
-
-            const double delta{d / R_EARTH};
-            const double sin_lat2{sin(lat1) * cos(delta) +
-                                  cos(lat1) * sin(delta) * cos(b)};
-            const double y{sin(b) * sin(delta) * cos(lat1)};
-            const double x{cos(delta) - sin(lat1) * sin_lat2};
-            lat = asin(sin_lat2);
-            lon = lon1 + atan2(y, x);
-
-            lat *= DEG;
-            lon *= DEG;
-            lon = fmod((lon + 540.0), 360.0) - 180.0;
-        }
-
-        void cartesian(double &x, double &y, double lat, double lon, double lat0, double lon0)
-        {
-            lat0 *= RAD;
-            lon0 *= RAD;
-            lat *= RAD;
-            lon *= RAD;
-
-            const double dlon{lon - lon0};
-            x = dlon * cos(lat / 2.0 + lat0 / 2.0) * R_EARTH;
-            y = (lat - lat0) * R_EARTH;
-        }
-
-        double lon2x(double lon, int z)
-        {
-            return (lon + 180.0) / 360.0 * double(POW2[z]);
-        }
-
-        double lat2y(double lat, int z)
-        {
-            return (1.0 - asinh(tan(lat * RAD)) / PI) / 2.0 * double(POW2[z]);
-        }
-
-        double x2lon(double x, int z)
-        {
-            return x / double(POW2[z]) * 360.0 - 180.0;
-        }
-
-        double y2lat(double y, int z)
-        {
-            const double n{PI - PI2 * y / double(POW2[z])};
-            return DEG * atan(0.5 * (exp(n) - exp(-n)));
-        }
-
-        int lon2tx(double lon, int z)
-        {
-            return int(floor(lon2x(lon, z)));
-        }
-
-        int lat2ty(double lat, int z)
-        {
-            return int(floor(lat2y(lat, z)));
-        }
-
         // Helpers
         //-------------------------------------------------------------------------
         std::string GetTileUrl(const TileIndex &index, const std::string &baseUrl)
@@ -244,8 +96,8 @@ namespace Mi
                 plotSize = ImPlot::GetPlotSize(); // pixels
 
                 tileRes = plotSize.x / plotLims.X.Size();
-                zoom = std::clamp(int(floor(log2(tileRes / tileSize))), MIN_ZOOM, MAX_ZOOM);
-                tilesNum = POW2[zoom];
+                zoom = std::clamp(int(log2(tileRes / tileSize)), minZoom, maxZoom);
+                tilesNum = (1 << zoom); // 2^zoom
                 tileSizeScaled = 1. / double(tilesNum);
 
                 minTX = std::clamp(int(plotLims.X.Min * tilesNum), 0, tilesNum - 1);
@@ -254,6 +106,7 @@ namespace Mi
                 maxTY = std::clamp(int(plotLims.Y.Max * tilesNum), 0, tilesNum - 1);
             }
 
+            int minZoom{0}, maxZoom{18};
             ImPlotRect plotLims{};
             ImVec2 plotSize{};
             double tileRes{};
