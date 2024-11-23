@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <imgui.h>
+#include "ImMapPlot.h"
 
 namespace Gui
 {
@@ -16,7 +17,6 @@ namespace Gui
         void show();
 
     private:
-        ImTextureID getTileTex(int x, int y, int z);
-        std::string getTileUrl(int x, int y, int z);
+        ImTextureID getTileTex(const ImMapPlot::TileIndex& index);
     };
 }

@@ -20,8 +20,8 @@
             }
         },  
         {
-            "inherits": "desktop-release",
             "name": "desktop-debug",
+            "inherits": "desktop-release",
             "displayName": "desktop-debug",
             "binaryDir": "${sourceDir}/build/debug",
             "cacheVariables": {

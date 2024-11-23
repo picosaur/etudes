@@ -5,29 +5,29 @@
 
 namespace Gui
 {
-    template <typename T>
-    class XyzListItem
+    template <typename Tk, typename Tv>
+    class KeyListItem
     {
     public:
-        int x{}, y{}, z{};
-        std::unique_ptr<T> value;
+        Tk key;
+        std::unique_ptr<Tv> value;
     };
 
-    template <typename T>
-    class XyzList
+    template <typename Tk, typename Tv>
+    class KeyList
     {
-        std::vector<XyzListItem<T>> list_;
+        std::vector<KeyListItem<Tk,Tv>> list_;
 
     public:
         auto begin() { return list_.begin(); }
 
         auto end() { return list_.end(); }
 
-        auto find(int x, int y, int z)
+        auto find(const Tk& key)
         {
-            auto cmp = [x, y, z](const auto &item)
+            auto cmp = [key](const auto &item)
             {
-                return item.x == x && item.y == y && item.z == z;
+                return item.key == key;
             };
             return std::find_if(list_.begin(), list_.end(), cmp);
         }
@@ -41,20 +41,20 @@ namespace Gui
             return std::find_if(list_.begin(), list_.end(), cmp);
         }
 
-        auto insert(int x, int y, int z, T value)
+        auto insert(const Tk& key, Tv value)
         {
             auto it{list_.end()};
-            if (it = find(x, y, z); it != end())
+            if (it = find(key); it != end())
             {
-                it->value = std::make_unique<T>(std::move(value));
+                it->value = std::make_unique<Tv>(std::move(value));
             }
             else if (it = findEmpty(); it != end())
             {
-                (*it) = {.x = x, .y = y, .z = z, .value = std::make_unique<T>(std::move(value))};
+                (*it) = {.key = key, .value = std::make_unique<Tv>(std::move(value))};
             }
             else
             {
-                list_.push_back({.x = x, .y = y, .z = z, .value = std::make_unique<T>(std::move(value))});
+                list_.push_back({.key = key, .value = std::make_unique<Tv>(std::move(value))});
                 it = std::prev(list_.end());
             }
             return it;
@@ -62,15 +62,14 @@ namespace Gui
     };
 
     using Fetcher = Em::Fetcher;
-    using Image = ImImage;
 
     class TileListItem
     {
     public:
         std::unique_ptr<Fetcher> fetcher;
-        std::unique_ptr<Image> image;
+        std::unique_ptr<ImImage> image;
     };
-    using TileList = XyzList<TileListItem>;
+    using TileList = KeyList<ImMapPlot::TileIndex, TileListItem>;
 
     class MapWidget::Impl
     {
@@ -89,29 +88,28 @@ namespace Gui
         if (ImMapPlot::BeginMapPlot("MapPlot", {-1, -1}))
         {
             ImMapPlot::SetupMapPlot();
-            ImMapPlot::PlotMap("MapMap", [this](int x, int y, int z)
-                               { return getTileTex(x, y, z); });
+            ImMapPlot::PlotMap("MapMap", [this](const auto& index)
+                               { return getTileTex(index); });
             ImMapPlot::PlotTileGrid("MapGrid");
             ImMapPlot::EndMapPlot();
         }
     }
 
-    ImTextureID MapWidget::getTileTex(int x, int y, int z)
+    ImTextureID MapWidget::getTileTex(const ImMapPlot::TileIndex& index)
     {
-        if (auto it{impl_->tiles.find(x,y,z)}; it != impl_->tiles.end())
+        if (auto it{impl_->tiles.find(index)}; it != impl_->tiles.end())
         {
             if (it->value->image) {
                 return it->value->image->textureId();
             }
             if (it->value->fetcher && it->value->fetcher->isDone()) {
-                it->value->image = std::make_unique<Image>(it->value->fetcher->data(), it->value->fetcher->dataSize());
+                it->value->image = std::make_unique<ImImage>(it->value->fetcher->data(), it->value->fetcher->dataSize());
                 it->value->fetcher = {};
                 return it->value->image->textureId();
             }
         } else {
-            impl_->tiles.insert(x,y,z, {.fetcher = std::make_unique<Fetcher>(ImMapPlot::GetTileUrl(x,y,z, impl_->tileUrl))});
+            impl_->tiles.insert(index, {.fetcher = std::make_unique<Fetcher>(ImMapPlot::GetTileUrl(index, impl_->tileUrl))});
         }
-
         return 0;
     }
 }

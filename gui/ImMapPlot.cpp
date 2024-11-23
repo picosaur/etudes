@@ -6,6 +6,9 @@
 #include <vector>
 #include <string>
 
+// REFERENCES
+// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
+
 namespace ImMapPlot
 {
     static constexpr double PI{3.14159265358979323846};
@@ -152,30 +155,30 @@ namespace ImMapPlot
     {
         return int(floor(lat2y(lat, z)));
     }
-    
+
     // Helpers
     //-------------------------------------------------------------------------
-    std::string GetTileUrl(int x, int y, int z, const std::string &baseUrl)
+    std::string GetTileUrl(const TileIndex &index, const std::string &baseUrl)
     {
         auto url{baseUrl};
         if (auto pos_x{url.find("{x}")}; pos_x < url.size())
         {
-            url.replace(pos_x, 3, std::to_string(x));
+            url.replace(pos_x, 3, std::to_string(index.x));
         }
         if (auto pos_y{url.find("{y}")}; pos_y < url.size())
         {
-            url.replace(pos_y, 3, std::to_string(y));
+            url.replace(pos_y, 3, std::to_string(index.y));
         }
         if (auto pos_z{url.find("{z}")}; pos_z < url.size())
         {
-            url.replace(pos_z, 3, std::to_string(z));
+            url.replace(pos_z, 3, std::to_string(index.z));
         }
         return url;
     }
 
-    std::string GetTileLabel(int tx, int ty, int tz)
+    std::string GetTileLabel(const TileIndex &index)
     {
-        return std::to_string(tz) + '/' + std::to_string(tx) + '/' + std::to_string(ty);
+        return std::to_string(index.z) + '/' + std::to_string(index.x) + '/' + std::to_string(index.y);
     }
 
     ImPlotPoint GetCenterPoint(const ImPlotPoint &p1, const ImPlotPoint &p2)
@@ -183,57 +186,55 @@ namespace ImMapPlot
         return {(p1.x + p2.x) / 2., (p1.y + p2.y) / 2.};
     }
 
-    // MapPlot
+    // Context
     //-------------------------------------------------------------------------
-
-    bool BeginMapPlot(const char *title_id, const ImVec2 &size, ImPlotFlags flags)
+    template <typename T>
+    class Context
     {
-        return ImPlot::BeginPlot(title_id, size, flags);
-    }
-
-    void SetupMapPlot(ImPlotAxisFlags xFlags, ImPlotAxisFlags yFlags)
-    {
-        ImPlot::SetupAxis(ImAxis_X1, nullptr, xFlags);
-        ImPlot::SetupAxis(ImAxis_Y1, nullptr, yFlags);
-        ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, -1.0, 2.0);
-        ImPlot::GetInputMap().ZoomRate = 0.25;
-        return ImPlot::SetupFinish();
-    }
-
-    void EndMapPlot()
-    {
-        return ImPlot::EndPlot();
-    }
-
-    class MapData
-    {
-    public:
-        std::vector<std::unique_ptr<std::string>> tileGridStrings;
-
-        const char *addString(const std::string &s)
-        {
-            tileGridStrings.push_back(std::make_unique<std::string>(s));
-            return tileGridStrings.back()->c_str();
-        }
-    };
-
-    class MapContext
-    {
-        MapContext() {}
+        Context() {}
 
     public:
-        MapContext(MapContext const &) = delete;
-        void operator=(MapContext const &) = delete;
+        Context(Context const &) = delete;
+        void operator=(Context const &) = delete;
 
-        static MapContext *Get()
+        static Context *Get()
         {
-            static MapContext instance;
+            static Context instance;
             return &instance;
         }
 
-        ImPool<MapData> maps;
+        ImPool<T> pool;
     };
 
+
+    // MapData
+    // ------------------------------------------------------------------------
+    class MapData
+    {
+    public:
+    };
+
+    using MapContext = Context<MapData>;
+
+
+    // GridData
+    // ------------------------------------------------------------------------
+    class GridData
+    {
+    public:
+        std::vector<std::unique_ptr<std::string>> strings;
+
+        const char *addString(const std::string &s)
+        {
+            strings.push_back(std::make_unique<std::string>(s));
+            return strings.back()->c_str();
+        }
+    };
+
+    using GridContext = Context<GridData>;
+
+    // MapGeom
+    // ------------------------------------------------------------------------
     class MapGeom
     {
     public:
@@ -242,7 +243,7 @@ namespace ImMapPlot
             plotLims = ImPlot::GetPlotLimits(ImAxis_X1, ImAxis_Y1);
             plotSize = ImPlot::GetPlotSize(); // pixels
 
-            tileRes = std::max(plotSize.x / plotLims.X.Size(), plotSize.y / plotLims.Y.Size());
+            tileRes = plotSize.x / plotLims.X.Size();
             zoom = std::clamp(int(floor(log2(tileRes / tileSize))), MIN_ZOOM, MAX_ZOOM);
             tilesNum = POW2[zoom];
             tileSizeScaled = 1. / double(tilesNum);
@@ -262,43 +263,63 @@ namespace ImMapPlot
         int minTX{}, maxTX{}, minTY{}, maxTY{};
     };
 
-    void PlotMap(const char *label_id, const TileGetter &getter, float tileSize, const ImVec2 &uv0, const ImVec2 &uv1)
+
+    bool BeginMapPlot(const char *title_id, const ImVec2 &size, ImPlotFlags flags)
     {
-        auto *mapCtx = MapContext::Get()->maps.GetOrAddByKey(ImGui::GetID(label_id));
-        auto mapGeom = MapGeom(tileSize);
+        return ImPlot::BeginPlot(title_id, size, flags);
+    }
+
+    void SetupMapPlot(ImPlotAxisFlags xFlags, ImPlotAxisFlags yFlags)
+    {
+        ImPlot::SetupAxis(ImAxis_X1, nullptr, xFlags);
+        ImPlot::SetupAxis(ImAxis_Y1, nullptr, yFlags);
+        ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, -1.0, 2.0);
+        ImPlot::GetInputMap().ZoomRate = 1.0;
+        return ImPlot::SetupFinish();
+    }
+
+    void EndMapPlot()
+    {
+        return ImPlot::EndPlot();
+    }
+
+    void PlotMap(const char *label_id, const TileGetter &getter, const TileCleaner &cleaner, float tileSize, const ImVec2 &uv0, const ImVec2 &uv1)
+    {
+        auto *ctx = MapContext::Get()->pool.GetOrAddByKey(ImGui::GetID(label_id));
+        auto geom = MapGeom(tileSize);
 
         ImPlotPoint bmin{}, bmax{};
-        for (auto x{mapGeom.minTX}; x < mapGeom.maxTX + 1; ++x)
+        for (auto x{geom.minTX}; x < geom.maxTX + 1; ++x)
         {
-            bmin.x = double(x) * mapGeom.tileSizeScaled;
-            bmax.x = double(x + 1) * mapGeom.tileSizeScaled;
-            for (auto y{mapGeom.minTY}; y != mapGeom.maxTY + 1; ++y)
+            bmin.x = double(x) * geom.tileSizeScaled;
+            bmax.x = double(x + 1) * geom.tileSizeScaled;
+            for (auto y{geom.minTY}; y != geom.maxTY + 1; ++y)
             {
-                bmin.y = double(y) * mapGeom.tileSizeScaled;
-                bmax.y = double(y + 1) * mapGeom.tileSizeScaled;
-                ImPlot::PlotImage("##", getter(x, y, mapGeom.zoom), bmin, bmax, uv0, uv1);
+                bmin.y = double(y) * geom.tileSizeScaled;
+                bmax.y = double(y + 1) * geom.tileSizeScaled;
+                ImPlot::PlotImage("##", getter(TileIndex(x, y, geom.zoom)), bmin, bmax, uv0, uv1);
             }
         }
     }
 
     void PlotTileGrid(const char *label_id, float tileSize, ImU32 color, float thickness)
     {
-        auto *mapCtx = MapContext::Get()->maps.GetOrAddByKey(ImGui::GetID(label_id));
-        mapCtx->tileGridStrings.clear();
-        auto mapGeom = MapGeom(tileSize);
+        auto *ctx = GridContext::Get()->pool.GetOrAddByKey(ImGui::GetID(label_id));
+        ctx->strings.clear();
+        auto geom = MapGeom(tileSize);
 
         ImPlotPoint bmin{}, bmax{};
-        for (auto x{mapGeom.minTX}; x < mapGeom.maxTX + 1; ++x)
+        for (auto x{geom.minTX}; x < geom.maxTX + 1; ++x)
         {
-            bmin.x = double(x) * mapGeom.tileSizeScaled;
-            bmax.x = double(x + 1) * mapGeom.tileSizeScaled;
-            for (auto y{mapGeom.minTY}; y != mapGeom.maxTY + 1; ++y)
+            bmin.x = double(x) * geom.tileSizeScaled;
+            bmax.x = double(x + 1) * geom.tileSizeScaled;
+            for (auto y{geom.minTY}; y != geom.maxTY + 1; ++y)
             {
-                bmin.y = double(y) * mapGeom.tileSizeScaled;
-                bmax.y = double(y + 1) * mapGeom.tileSizeScaled;
+                bmin.y = double(y) * geom.tileSizeScaled;
+                bmax.y = double(y + 1) * geom.tileSizeScaled;
                 auto center = GetCenterPoint(bmin, bmax);
                 PlotRect("##", bmin, bmax, color);
-                ImPlot::PlotText(mapCtx->addString(GetTileLabel(x, y, mapGeom.zoom)), center.x, center.y);
+                ImPlot::PlotText(ctx->addString(GetTileLabel(TileIndex(x, y, geom.zoom))), center.x, center.y);
             }
         }
     }
