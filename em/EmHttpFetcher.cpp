@@ -1,10 +1,13 @@
-#include "EmFetcher.h"
+#include "EmHttpFetcher.h"
 #include <emscripten/fetch.h>
 #include <stdio.h>
 
+// REFERENCES
+// https://emscripten.org/docs/api_reference/fetch.html
+
 namespace Em
 {
-    class Fetcher::Impl
+    class HttpFetcher::Impl
     {
     public:
         // http request headers
@@ -18,9 +21,21 @@ namespace Em
         // 3: LOADING: download in progress.
         // 4: DONE: download finished.
         std::atomic_int state{0};
+
+        static void OnSuccess(emscripten_fetch_t *fetch)
+        {
+            printf("Finished downloading %llu bytes from URL %s.\n", fetch->numBytes, fetch->url);
+            static_cast<HttpFetcher *>(fetch->userData)->impl_->state = fetch->readyState;
+        }
+
+        static void OnError(emscripten_fetch_t *fetch)
+        {
+            printf("Downloading %s failed, HTTP failure status code: %d.\n", fetch->url, fetch->status);
+            static_cast<HttpFetcher *>(fetch->userData)->impl_->state = fetch->readyState;
+        }
     };
 
-    Fetcher::Fetcher(const std::string &url, const FetcherHeaders &headers) : impl_{std::make_unique<Impl>()}
+    HttpFetcher::HttpFetcher(const std::string &url, const HttpHeaders &headers) : impl_{std::make_unique<Impl>()}
     {
         // copy headers
         for (const auto &header : headers)
@@ -36,12 +51,12 @@ namespace Em
         attr.userData = (this);
         attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
         attr.requestHeaders = impl_->headers.data();
-        attr.onsuccess = Fetcher::onSuccess;
-        attr.onerror = Fetcher::onError;
+        attr.onsuccess = Impl::OnSuccess;
+        attr.onerror = Impl::OnError;
         impl_->fetch = emscripten_fetch(&attr, url.c_str());
     }
 
-    Fetcher::~Fetcher()
+    HttpFetcher::~HttpFetcher()
     {
         if (impl_->fetch != nullptr)
         {
@@ -49,44 +64,32 @@ namespace Em
         }
     }
 
-    void Fetcher::onSuccess(emscripten_fetch_t *fetch)
-    {
-        printf("Finished downloading %llu bytes from URL %s.\n", fetch->numBytes, fetch->url);
-        static_cast<Fetcher *>(fetch->userData)->impl_->state = fetch->readyState;
-    }
-
-    void Fetcher::onError(emscripten_fetch_t *fetch)
-    {
-        printf("Downloading %s failed, HTTP failure status code: %d.\n", fetch->url, fetch->status);
-        static_cast<Fetcher *>(fetch->userData)->impl_->state = fetch->readyState;
-    }
-
-    std::string Fetcher::url() const
+    std::string HttpFetcher::url() const
     {
         return impl_->fetch->url;
     }
 
-    std::string Fetcher::statusText() const
+    std::string HttpFetcher::statusText() const
     {
         return impl_->fetch->statusText;
     }
 
-    bool Fetcher::isDone() const
+    bool HttpFetcher::isDone() const
     {
         return impl_->state.load() == 4;
     }
 
-    const std::byte *Fetcher::data() const
+    const std::byte *HttpFetcher::data() const
     {
         return reinterpret_cast<const std::byte *>(impl_->fetch->data);
     }
 
-    std::size_t Fetcher::dataSize() const
+    std::size_t HttpFetcher::dataSize() const
     {
         return impl_->fetch->numBytes;
     }
 
-    void Fetcher::assign(std::string &str) const
+    void HttpFetcher::assignData(std::string &str) const
     {
         str.assign(impl_->fetch->data, impl_->fetch->data + impl_->fetch->numBytes);
     }

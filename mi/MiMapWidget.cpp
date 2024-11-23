@@ -1,6 +1,6 @@
 #include "MiMapWidget.h"
 #include "MiMapPlot.h"
-#include "EmFetcher.h"
+#include "EmHttpFetcher.h"
 #include "MiImage.h"
 #include <iostream>
 
@@ -74,14 +74,10 @@ namespace Mi
         }
     };
 
-    
-    using Fetcher = Em::Fetcher;
-    using FetcherHeaders = std::unordered_map<std::string, std::string>;
-
     class DummyFetcher
     {
     public:
-        DummyFetcher(const std::string &url, const FetcherHeaders &headers = {}) {}
+        DummyFetcher(const std::string &url, const Em::HttpHeaders &headers = {}) {}
 
         bool isDone() const { return true; }
 
@@ -92,7 +88,7 @@ namespace Mi
     class TileListItem
     {
     public:
-        std::unique_ptr<Fetcher> fetcher;
+        std::unique_ptr<Em::HttpFetcher> fetcher;
         std::unique_ptr<Image> image;
         bool used{};
     };
@@ -139,7 +135,7 @@ namespace Mi
             }
             else
             {
-                insert(index, {.fetcher = std::make_unique<Fetcher>(MapPlot::GetTileUrl(index, url)), .used = true});
+                insert(index, {.fetcher = std::make_unique<Em::HttpFetcher>(MapPlot::GetTileUrl(index, url)), .used = true});
             }
             return 0;
         }

@@ -1,17 +1,18 @@
 cmake_minimum_required(VERSION 3.10.0)
-project(emwrapper)
+project(em)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-file(GLOB_RECURSE EMWRAPPER_SRC *.cpp *.h)
+file(GLOB_RECURSE EM_SRC *.cpp *.h)
 
-add_library(${PROJECT_NAME} ${EMWRAPPER_SRC})
+add_library(${PROJECT_NAME} ${EM_SRC})
 
 target_include_directories (${PROJECT_NAME} PUBLIC .)
 
-target_link_options(${PROJECT_NAME} PUBLIC -sFETCH)
-
+if (EMSCRIPTEN)
+    target_link_options(${PROJECT_NAME} PUBLIC -sFETCH)
+endif ()
 
 # if (EMSCRIPTEN)
 #     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -sUSE_GLFW=3 -sUSE_PTHREADS=1 -sALLOW_MEMORY_GROWTH=1)
