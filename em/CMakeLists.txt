@@ -10,9 +10,11 @@ add_library(${PROJECT_NAME} ${EM_SRC})
 
 target_include_directories (${PROJECT_NAME} PUBLIC .)
 
-if (EMSCRIPTEN)
+if(EMSCRIPTEN)
     target_link_options(${PROJECT_NAME} PUBLIC -sFETCH)
-endif ()
+else()
+    target_link_libraries(${PROJECT_NAME} PRIVATE httplib)
+endif()
 
 # if (EMSCRIPTEN)
 #     target_link_options(${CMAKE_PROJECT_NAME} PRIVATE -sUSE_GLFW=3 -sUSE_PTHREADS=1 -sALLOW_MEMORY_GROWTH=1)

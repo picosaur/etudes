@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(external/hello_imgui)
 add_subdirectory(external/implot)
+add_subdirectory(external/cpp-httplib)
+
 add_subdirectory(gui)
 add_subdirectory(em)
 add_subdirectory(mi)
