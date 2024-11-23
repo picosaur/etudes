@@ -95,6 +95,16 @@ namespace Gui
                      { item.value->used = {}; });
         }
 
+        void removeUnused()
+        {
+            erase_if([](auto &item)
+                     { 
+                        if (item.value->fetcher && !item.value->fetcher->isDone()) { 
+                            return false;
+                        }
+                        return !item.value->used; });
+        }
+
         ImTextureID getTile(const ImMapPlot::TileIndex &index, const std::string &url)
         {
             if (auto it{find(index)}; it != end())
@@ -116,12 +126,6 @@ namespace Gui
                 insert(index, {.fetcher = std::make_unique<Fetcher>(ImMapPlot::GetTileUrl(index, url)), .used = true});
             }
             return 0;
-        }
-
-        void removeUnused()
-        {
-            erase_if([](auto &item)
-                      { return !item.value->used; });
         }
     };
 
@@ -150,6 +154,5 @@ namespace Gui
             ImMapPlot::EndMapPlot();
             impl_->tiles.removeUnused();
         }
-        
     }
 }
