@@ -1,9 +1,8 @@
 #include "EmHttpFetcher.h"
-#include <emscripten/fetch.h>
 #include <stdio.h>
 
-// REFERENCES
-// https://emscripten.org/docs/api_reference/fetch.html
+#ifdef EMSCRIPTEN
+#include <emscripten/fetch.h>
 
 namespace Em
 {
@@ -94,3 +93,55 @@ namespace Em
         str.assign(impl_->fetch->data, impl_->fetch->data + impl_->fetch->numBytes);
     }
 }
+
+#else
+
+namespace Em
+{
+    class HttpFetcher::Impl
+    {
+        public:
+    };
+
+    HttpFetcher::HttpFetcher(const std::string &url, const HttpHeaders &headers) : impl_{std::make_unique<Impl>()}
+    {
+
+    }
+
+    HttpFetcher::~HttpFetcher()
+    {
+
+    }
+
+    std::string HttpFetcher::url() const
+    {
+        return {};
+    }
+
+    std::string HttpFetcher::statusText() const
+    {
+        return {};
+    }
+
+    bool HttpFetcher::isDone() const
+    {
+        return {};
+    }
+
+    const std::byte *HttpFetcher::data() const
+    {
+        return {};
+    }
+
+    std::size_t HttpFetcher::dataSize() const
+    {
+        return {};
+    }
+
+    void HttpFetcher::assignData(std::string &str) const
+    {
+
+    }
+}
+
+#endif
