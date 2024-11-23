@@ -1,8 +1,8 @@
 #include "MainWindow.h"
 #include <hello_imgui/hello_imgui.h>
 #include "FetchWidget.h"
-#include "MapWidget.h"
-#include "ImMapPlot.h"
+#include "MiMapWidget.h"
+#include "MiMapPlot.h"
 #include <implot.h>
 
 namespace Gui
@@ -10,8 +10,8 @@ namespace Gui
     class MainWindow::Impl
     {
     public:
-        FetchWidget fetchWidget;
-        MapWidget mapWidget;
+        Mi::FetchWidget fetchWidget;
+        Mi::MapWidget mapWidget;
     };
 
     MainWindow::MainWindow() : impl_{std::make_unique<Impl>()}

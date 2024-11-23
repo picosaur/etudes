@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-namespace Gui
+namespace Mi
 {
     class MapWidget
     {

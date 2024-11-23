@@ -2,7 +2,7 @@
 #include <memory>
 #include "EmFetcher.h"
 
-namespace Gui
+namespace Mi
 {
     class FetchWidget
     {

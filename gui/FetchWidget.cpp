@@ -3,9 +3,9 @@
 #include <imgui_internal.h>
 #include <imgui_stdlib.h>
 #include "EmFetcher.h"
-#include "ImImage.h"
+#include "MiImage.h"
 
-namespace Gui
+namespace Mi
 {
     class FetchWidget::Impl
     {
@@ -13,7 +13,7 @@ namespace Gui
         std::string url{"https://a.tile.openstreetmap.org/0/0/0.png"};
         std::unique_ptr<Em::Fetcher> fetcher;
         std::string status;
-        std::unique_ptr<ImImage> image;
+        std::unique_ptr<Image> image;
         std::string text;
     };
 
@@ -33,7 +33,7 @@ namespace Gui
         if (impl_->fetcher && impl_->fetcher->isDone()) {
             impl_->status = impl_->fetcher->statusText();
             impl_->fetcher->assign(impl_->text);
-            impl_->image = std::make_unique<ImImage>(impl_->fetcher->data(), (int)impl_->fetcher->dataSize());
+            impl_->image = std::make_unique<Image>(impl_->fetcher->data(), (int)impl_->fetcher->dataSize());
             impl_->fetcher = {};
 
         }

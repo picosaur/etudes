@@ -1,10 +1,10 @@
-#include "MapWidget.h"
-#include "ImMapPlot.h"
+#include "MiMapWidget.h"
+#include "MiMapPlot.h"
 #include "EmFetcher.h"
-#include "ImImage.h"
+#include "MiImage.h"
 #include <iostream>
 
-namespace Gui
+namespace Mi
 {
     template <typename Tk, typename Tv>
     class KeyListItem
@@ -74,17 +74,30 @@ namespace Gui
         }
     };
 
+    
     using Fetcher = Em::Fetcher;
+    using FetcherHeaders = std::unordered_map<std::string, std::string>;
+
+    class DummyFetcher
+    {
+    public:
+        DummyFetcher(const std::string &url, const FetcherHeaders &headers = {}) {}
+
+        bool isDone() const { return true; }
+
+        const std::byte *data() const { return nullptr; }
+        std::size_t dataSize() const { return 0; }
+    };
 
     class TileListItem
     {
     public:
         std::unique_ptr<Fetcher> fetcher;
-        std::unique_ptr<ImImage> image;
+        std::unique_ptr<Image> image;
         bool used{};
     };
 
-    class TileList : public KeyList<ImMapPlot::TileIndex, TileListItem>
+    class TileList : public KeyList<MapPlot::TileIndex, TileListItem>
     {
     public:
         TileList() {}
@@ -97,15 +110,18 @@ namespace Gui
 
         void removeUnused()
         {
-            erase_if([](auto &item)
-                     { 
-                        if (item.value->fetcher && !item.value->fetcher->isDone()) { 
-                            return false;
-                        }
-                        return !item.value->used; });
+            erase_if(
+                [](auto &item)
+                {
+                    if (item.value->fetcher && !item.value->fetcher->isDone())
+                    {
+                        return false;
+                    }
+                    return !item.value->used;
+                });
         }
 
-        ImTextureID getTile(const ImMapPlot::TileIndex &index, const std::string &url)
+        ImTextureID getTile(const MapPlot::TileIndex &index, const std::string &url)
         {
             if (auto it{find(index)}; it != end())
             {
@@ -116,14 +132,14 @@ namespace Gui
                 }
                 if (it->value->fetcher && it->value->fetcher->isDone())
                 {
-                    it->value->image = std::make_unique<ImImage>(it->value->fetcher->data(), it->value->fetcher->dataSize());
+                    it->value->image = std::make_unique<Image>(it->value->fetcher->data(), it->value->fetcher->dataSize());
                     it->value->fetcher = {};
                     return it->value->image->textureId();
                 }
             }
             else
             {
-                insert(index, {.fetcher = std::make_unique<Fetcher>(ImMapPlot::GetTileUrl(index, url)), .used = true});
+                insert(index, {.fetcher = std::make_unique<Fetcher>(MapPlot::GetTileUrl(index, url)), .used = true});
             }
             return 0;
         }
@@ -144,14 +160,14 @@ namespace Gui
     void MapWidget::show()
     {
         ImGui::Text("Tiles %zu", impl_->tiles.size());
-        if (ImMapPlot::BeginMapPlot("MapPlot", {-1, -1}))
+        if (MapPlot::BeginMapPlot("MapPlot", {-1, -1}))
         {
             impl_->tiles.setUnused();
-            ImMapPlot::SetupMapPlot();
-            ImMapPlot::PlotMap("MapMap", [this](const auto &index)
+            MapPlot::SetupMapPlot();
+            MapPlot::PlotMap("MapMap", [this](const auto &index)
                                { return impl_->tiles.getTile(index, impl_->tileUrl); });
-            ImMapPlot::PlotTileGrid("MapGrid");
-            ImMapPlot::EndMapPlot();
+            MapPlot::PlotTileGrid("MapGrid");
+            MapPlot::EndMapPlot();
             impl_->tiles.removeUnused();
         }
     }
