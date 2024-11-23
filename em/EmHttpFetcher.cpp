@@ -80,42 +80,89 @@ void HttpFetcher::assignData(std::string &str) const {
 
 #else
 
+#include <future>
 #include <httplib.h>
 
 namespace Em {
 class HttpFetcher::Impl {
 public:
-  std::unique_ptr<httplib::Client> cli;
-  std::unique_ptr<httplib::Result> res;
+  std::string url;
+  std::future<httplib::Result> future;
+  std::string body;
+
+  std::string host() const {
+    const auto http_pos = url.find("http");
+    if (http_pos == std::string::npos) {
+      throw std::runtime_error("Url does not start with http");
+    }
+    const auto double_slash_pos = url.find("//");
+    if (double_slash_pos == std::string::npos) {
+      throw std::runtime_error("Url does not contain //");
+    }
+    auto slash_pos = url.find('/', double_slash_pos + 2);
+    if (slash_pos == std::string::npos) {
+      slash_pos = url.length();
+    }
+    return url.substr(0, slash_pos);
+  }
+
+  void fetch() {
+    future = std::async(std::launch::async, [this]() -> httplib::Result {
+      auto cli = httplib::Client(host());
+      cli.set_connection_timeout(1, 0);
+      cli.enable_server_certificate_verification(false);
+      return cli.Get(
+          url, httplib::Headers(),
+          [&](const httplib::Response &response) {
+            return true; // return 'false' if you want to cancel the request.
+          },
+          [&](const char *data, size_t data_length) {
+            body.append(data, data_length);
+            return true; // return 'false' if you want to cancel the request.
+          });
+    });
+  }
+
+  bool isDone() {
+    return future.wait_for(std::chrono::seconds(0)) ==
+           std::future_status::ready;
+  }
 };
 
 HttpFetcher::HttpFetcher(const std::string &url, const HttpHeaders &headers)
     : impl_{std::make_unique<Impl>()} {
-  impl_->cli = std::make_unique<httplib::Client>(url, 80);
-  impl_->res = std::make_unique<httplib::Result>(impl_->cli->Get("/"));
+  impl_->url = url;
+  impl_->fetch();
 }
 
-HttpFetcher::~HttpFetcher() {}
+HttpFetcher::~HttpFetcher() { }
 
-std::string HttpFetcher::url() const { return {}; }
+std::string HttpFetcher::url() const { return impl_->url; }
 
 std::string HttpFetcher::statusText() const { return {}; }
 
-bool HttpFetcher::isDone() const { return true; }
+bool HttpFetcher::isDone() const { return impl_->isDone(); }
 
 const std::byte *HttpFetcher::data() const {
+  if (impl_->isDone()) {
+    return reinterpret_cast<const std::byte *>(impl_->body.c_str());
+  }
   return nullptr;
-  return reinterpret_cast<const std::byte *>(impl_->res->value().body.c_str());
 }
 
 std::size_t HttpFetcher::dataSize() const {
+  if (impl_->isDone()) {
+    return impl_->body.size();
+  }
   return 0;
-  return impl_->res->value().body.size();
 }
 
 void HttpFetcher::assignData(std::string &str) const {
-  str = impl_->res->value().body;
+  if (impl_->isDone()) {
+    str = impl_->body;
+  }
 }
+
 } // namespace Em
 
 #endif

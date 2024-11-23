@@ -30,9 +30,7 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
 
   runnerParams.dockingParams.dockableWindows = {
       {"FetchWidget", "MainDockSpace", [&]() { impl_->fetchWidget.show(); }},
-      {"MapWidget", "MainDockSpace", [&]() {
-         // impl_->mapWidget.show();
-       }}};
+      {"MapWidget", "MainDockSpace", [&]() { impl_->mapWidget.show(); }}};
 
   runnerParams.callbacks.ShowGui = [&]() {};
 

@@ -54,16 +54,6 @@ public:
   }
 };
 
-class DummyFetcher {
-public:
-  DummyFetcher(const std::string &url, const Em::HttpHeaders &headers = {}) {}
-
-  bool isDone() const { return true; }
-
-  const std::byte *data() const { return nullptr; }
-  std::size_t dataSize() const { return 0; }
-};
-
 class TileListItem {
 public:
   std::unique_ptr<Em::HttpFetcher> fetcher;
@@ -112,11 +102,14 @@ public:
 class MapWidget::Impl {
 public:
   std::string tileUrl{"https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"};
-  // std::string tileUrl{"https://t2.openseamap.org/tile/{z}/{x}/{y}.png"};
+  // https://t2.openseamap.org/tile/{z}/{x}/{y}.png
+  // https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png
   TileList tiles;
 };
 
-MapWidget::MapWidget() : impl_{std::make_unique<Impl>()} {}
+MapWidget::MapWidget() : impl_{std::make_unique<Impl>()} {
+  impl_->tileUrl = "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png";
+}
 
 MapWidget::~MapWidget() {}
 

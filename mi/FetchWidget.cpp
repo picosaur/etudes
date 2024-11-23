@@ -30,9 +30,9 @@ void FetchWidget::show() {
   }
   if (impl_->fetcher && impl_->fetcher->isDone()) {
     impl_->status = impl_->fetcher->statusText();
-    impl_->fetcher->assignData(impl_->text);
-    // impl_->image = std::make_unique<Image>(impl_->fetcher->data(),
-    // (int)impl_->fetcher->dataSize());
+    //impl_->fetcher->assignData(impl_->text);
+    impl_->image = std::make_unique<Image>(impl_->fetcher->data(),
+    (int)impl_->fetcher->dataSize());
     impl_->fetcher = {};
   }
   ImGui::InputText("Status", &impl_->status);
