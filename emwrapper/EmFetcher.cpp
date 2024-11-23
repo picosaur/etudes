@@ -20,7 +20,7 @@ namespace Em
         std::atomic_int state{0};
     };
 
-    Fetcher::Fetcher(const std::string &url, const FetchHeaders &headers) : impl_{std::make_unique<Impl>()}
+    Fetcher::Fetcher(const std::string &url, const FetcherHeaders &headers) : impl_{std::make_unique<Impl>()}
     {
         // copy headers
         for (const auto &header : headers)

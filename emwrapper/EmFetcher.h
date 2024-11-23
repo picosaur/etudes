@@ -12,7 +12,7 @@ class emscripten_fetch_t;
 
 namespace Em
 {
-    using FetchHeaders = std::unordered_map<std::string, std::string>;
+    using FetcherHeaders = std::unordered_map<std::string, std::string>;
 
     class Fetcher
     {
@@ -20,7 +20,7 @@ namespace Em
         std::unique_ptr<Impl> impl_;
 
     public:
-        Fetcher(const std::string &url, const FetchHeaders &headers = {});
+        Fetcher(const std::string &url, const FetcherHeaders &headers = {});
         ~Fetcher();
 
         std::string url() const; 
@@ -30,7 +30,7 @@ namespace Em
         const std::byte *data() const;
         std::size_t dataSize() const;
 
-        void assign(std::string &text) const;
+        void assign(std::string &str) const;
 
     private:
         static void onSuccess(emscripten_fetch_t *fetch);
