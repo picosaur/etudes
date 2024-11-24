@@ -1,4 +1,4 @@
-#include "FetchWidget.h"
+#include "MiHttpFetchWidget.h"
 #include "EmHttpFetcher.h"
 #include "MiImage.h"
 #include <imgui.h>
@@ -6,7 +6,7 @@
 #include <imgui_stdlib.h>
 
 namespace Mi {
-class FetchWidget::Impl {
+class HttpFetchWidget::Impl {
 public:
   std::string url{"https://a.tile.openstreetmap.org/0/0/0.png"};
   std::unique_ptr<Em::HttpFetcher> fetcher;
@@ -15,11 +15,11 @@ public:
   std::string text;
 };
 
-FetchWidget::FetchWidget() : impl_{std::make_unique<Impl>()} {}
+HttpFetchWidget::HttpFetchWidget() : impl_{std::make_unique<Impl>()} {}
 
-FetchWidget::~FetchWidget() {}
+HttpFetchWidget::~HttpFetchWidget() {}
 
-void FetchWidget::show() {
+void HttpFetchWidget::show() {
   ImGui::InputText("URL", &impl_->url);
   ImGui::SameLine();
   if (ImGui::Button("Fetch")) {
@@ -30,9 +30,18 @@ void FetchWidget::show() {
   }
   if (impl_->fetcher && impl_->fetcher->isDone()) {
     impl_->status = impl_->fetcher->statusText();
-    //impl_->fetcher->assignData(impl_->text);
+    // impl_->fetcher->assignData(impl_->text);
     impl_->image = std::make_unique<Image>(impl_->fetcher->data(),
-    (int)impl_->fetcher->dataSize());
+                                           (int)impl_->fetcher->dataSize());
+    impl_->text.clear();
+    const auto headers{impl_->fetcher->responseHeaders()};
+    for (const auto &header : headers) {
+      impl_->text.append(header.first);
+      impl_->text.append("\t");
+      impl_->text.append(header.second);
+      impl_->text.append("\n");
+    }
+
     impl_->fetcher = {};
   }
   ImGui::InputText("Status", &impl_->status);
@@ -40,5 +49,7 @@ void FetchWidget::show() {
     ImGui::Image(impl_->image->textureId(), impl_->image->size());
   }
   ImGui::InputTextMultiline("Text", &impl_->text);
+  ImGui::Separator();
+  ImGui::InputTextMultiline("Text2", &impl_->text);
 }
 } // namespace Mi

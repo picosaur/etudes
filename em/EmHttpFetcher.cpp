@@ -1,9 +1,10 @@
 #include "EmHttpFetcher.h"
-#include <stdio.h>
 
 #ifdef EMSCRIPTEN
 
+#include <atomic>
 #include <emscripten/fetch.h>
+#include <stdio.h>
 
 namespace Em {
 class HttpFetcher::Impl {
@@ -61,8 +62,6 @@ HttpFetcher::~HttpFetcher() {
   }
 }
 
-std::string HttpFetcher::url() const { return impl_->fetch->url; }
-
 std::string HttpFetcher::statusText() const { return impl_->fetch->statusText; }
 
 bool HttpFetcher::isDone() const { return impl_->state.load() == 4; }
@@ -87,8 +86,10 @@ namespace Em {
 class HttpFetcher::Impl {
 public:
   std::string url;
-  std::future<httplib::Result> future;
-  std::string body;
+  httplib::Headers headers;
+  std::future<void> future;
+  std::string data;
+  httplib::Response response;
 
   std::string host() const {
     const auto http_pos = url.find("http");
@@ -107,17 +108,18 @@ public:
   }
 
   void fetch() {
-    future = std::async(std::launch::async, [this]() -> httplib::Result {
+    future = std::async(std::launch::async, [this]() {
       auto cli = httplib::Client(host());
       cli.set_connection_timeout(1, 0);
       cli.enable_server_certificate_verification(false);
-      return cli.Get(
-          url, httplib::Headers(),
-          [&](const httplib::Response &response) {
+      cli.Get(
+          url, headers,
+          [&](const httplib::Response &response_) {
+            this->response = response_;
             return true; // return 'false' if you want to cancel the request.
           },
-          [&](const char *data, size_t data_length) {
-            body.append(data, data_length);
+          [&](const char *data_, size_t sz_) {
+            this->data.append(data_, sz_);
             return true; // return 'false' if you want to cancel the request.
           });
     });
@@ -132,34 +134,49 @@ public:
 HttpFetcher::HttpFetcher(const std::string &url, const HttpHeaders &headers)
     : impl_{std::make_unique<Impl>()} {
   impl_->url = url;
+
+  // copy headers
+  for (const auto &header : headers) {
+    impl_->headers.insert(header);
+  }
+
   impl_->fetch();
 }
 
-HttpFetcher::~HttpFetcher() { }
-
-std::string HttpFetcher::url() const { return impl_->url; }
-
-std::string HttpFetcher::statusText() const { return {}; }
+HttpFetcher::~HttpFetcher() {}
 
 bool HttpFetcher::isDone() const { return impl_->isDone(); }
 
+std::string HttpFetcher::statusText() const { return {}; }
+
+HttpHeaders HttpFetcher::responseHeaders() const {
+  if (impl_->isDone()) {
+    HttpHeaders headers;
+    for (const auto &header : impl_->response.headers) {
+      headers.insert(header);
+    }
+    return headers;
+  }
+  return {};
+}
+
 const std::byte *HttpFetcher::data() const {
   if (impl_->isDone()) {
-    return reinterpret_cast<const std::byte *>(impl_->body.c_str());
+    return reinterpret_cast<const std::byte *>(impl_->data.c_str());
   }
   return nullptr;
 }
 
 std::size_t HttpFetcher::dataSize() const {
   if (impl_->isDone()) {
-    return impl_->body.size();
+    return impl_->data.size();
   }
   return 0;
 }
 
 void HttpFetcher::assignData(std::string &str) const {
   if (impl_->isDone()) {
-    str = impl_->body;
+    str = impl_->data;
   }
 }
 

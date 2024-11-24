@@ -8,7 +8,7 @@
 namespace Gui {
 class MainWindow::Impl {
 public:
-  Mi::FetchWidget fetchWidget;
+  Mi::HttpFetchWidget fetchWidget;
   Mi::MapWidget mapWidget;
 };
 

@@ -1,12 +1,10 @@
 #pragma once
-#include <atomic>
+#include "EmHttpHeaders.h"
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace Em {
-using HttpHeaders = std::unordered_map<std::string, std::string>;
 
 class HttpFetcher {
   class Impl;
@@ -16,9 +14,9 @@ public:
   HttpFetcher(const std::string &url, const HttpHeaders &headers = {});
   ~HttpFetcher();
 
-  std::string url() const;
-  std::string statusText() const;
   bool isDone() const;
+  std::string statusText() const;
+  HttpHeaders responseHeaders() const;
 
   const std::byte *data() const;
   std::size_t dataSize() const;
