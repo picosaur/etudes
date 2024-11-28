@@ -1,7 +1,8 @@
 #include "MainWindow.h"
 #include "FetchWidget.h"
-#include "MiMapPlot.h"
 #include "MiMapWidget.h"
+#include "MiWaveWidget.h"
+#include <SDL2/SDL_timer.h>
 #include <hello_imgui/hello_imgui.h>
 #include <implot.h>
 
@@ -10,6 +11,10 @@ class MainWindow::Impl {
 public:
   Mi::HttpFetchWidget fetchWidget;
   Mi::MapWidget mapWidget;
+  Mi::WaveWidget waveWidget;
+
+  uint32_t mapTicks{};
+  uint32_t waveTicks{};
 };
 
 MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
@@ -29,8 +34,22 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
   };
 
   runnerParams.dockingParams.dockableWindows = {
-      {"FetchWidget", "MainDockSpace", [&]() { impl_->fetchWidget.show(); }},
-      {"MapWidget", "MainDockSpace", [&]() { impl_->mapWidget.show(); }}};
+      {"HttpFetcher", "MainDockSpace", [&]() { impl_->fetchWidget.show(); }},
+
+      {"GeoMap", "MainDockSpace",
+       [&]() {
+         auto tic = SDL_GetTicks();
+         impl_->mapWidget.show();
+         auto toc = SDL_GetTicks();
+         impl_->mapTicks = toc - tic;
+       }},
+
+      {"Waveform", "MainDockSpace", [&]() {
+         auto tic = SDL_GetTicks();
+         impl_->waveWidget.show();
+         auto toc = SDL_GetTicks();
+         impl_->waveTicks = toc - tic;
+       }}};
 
   runnerParams.callbacks.ShowGui = [&]() {};
 
@@ -57,5 +76,7 @@ MainWindow::~MainWindow() {}
 
 void MainWindow::onShowMenus() {}
 
-void MainWindow::onShowToolbar() {}
+void MainWindow::onShowToolbar() {
+  ImGui::Text("MapTicks: %d, WaveTicks: %d", impl_->mapTicks, impl_->waveTicks);
+}
 } // namespace Gui
