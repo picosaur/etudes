@@ -48,19 +48,26 @@ void WaveWidget::show() {
 
     if (ImPlot::BeginItem("Wave")) {
       ImDrawList &draw_list = *ImPlot::GetPlotDrawList();
-      ImPlot::PushPlotClipRect();
+
+      draw_list.AddLine(pmin, pmax, IM_COL32_WHITE, 1.f);
+
+      /*
       ImVec2 p1, p2;
       for (auto i{0}; i < impl_->y.size(); ++i) {
         if (i < 0 || i >= impl_->y.size()) {
           continue;
-          draw_list.AddRect(p1, p2, IM_COL32_WHITE);
         }
+        ImPlot::PushPlotClipRect();
+        draw_list.AddLine({pmin.x + (float)i, 0.f}, {pmin.x + (float)i, 1.f},
+                          IM_COL32_WHITE, 1.f);
+        ImPlot::PopPlotClipRect();
       }
-      ImPlot::PopPlotClipRect();
+  */
+
       ImPlot::EndItem();
     }
 
-    ImPlot::PlotLine("Ref", impl_->y.data(), impl_->y.size());
+    // ImPlot::PlotLine("Ref", impl_->y.data(), impl_->y.size());
 
     impl_->pxsx = pxsx;
     impl_->sxpx = sxpx;
