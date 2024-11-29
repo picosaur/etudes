@@ -22,7 +22,7 @@ public:
     std::string second{};
     bool enabled{};
   };
-  std::vector<ReqHeaderItem> reqHeaders{256};
+  std::vector<ReqHeaderItem> reqHeaders{99};
 
   Em::HttpHeaders respHeaders;
   int respMode{};
@@ -125,8 +125,13 @@ void HttpWidget::Impl::showResponse() {
 void HttpWidget::Impl::showRespHeadersTable() {
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
   if (ImGui::BeginTable("ResponseHeadersTable", 3, ImGuiTableFlags_Borders)) {
+    static float keyColWidth{};
+    if (keyColWidth < 1.0) {
+      keyColWidth = ImGui::CalcTextSize("reference-text-used-for-calc-width").x;
+    }
     ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed);
-    ImGui::TableSetupColumn("Key");
+    ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed,
+                            keyColWidth);
     ImGui::TableSetupColumn("Value");
     ImGui::TableHeadersRow();
     for (const auto &header : respHeaders) {
@@ -194,9 +199,14 @@ void HttpWidget::Impl::showReqHeadersTable() {
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
   if (ImGui::BeginTable("RequestHeadersTable", 4, ImGuiTableFlags_Borders)) {
+    static float keyColWidth{};
+    if (keyColWidth < 1.0) {
+      keyColWidth = ImGui::CalcTextSize("reference-text-used-for-calc-width").x;
+    }
     ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed);
     ImGui::TableSetupColumn("Enable", ImGuiTableColumnFlags_WidthFixed);
-    ImGui::TableSetupColumn("Key");
+    ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed,
+                            keyColWidth);
     ImGui::TableSetupColumn("Value");
     ImGui::TableHeadersRow();
     for (auto &header : reqHeaders) {
