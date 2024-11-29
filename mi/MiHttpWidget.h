@@ -2,13 +2,13 @@
 #include <memory>
 
 namespace Mi {
-class HttpFetchWidget {
+class HttpWidget {
   class Impl;
   std::unique_ptr<Impl> impl_;
 
 public:
-  HttpFetchWidget();
-  ~HttpFetchWidget();
+  HttpWidget();
+  ~HttpWidget();
 
   void show();
 };

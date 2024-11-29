@@ -1,5 +1,5 @@
 #include "MainWindow.h"
-#include "FetchWidget.h"
+#include "MiHttpWidget.h"
 #include "MiMapWidget.h"
 #include "MiWaveWidget.h"
 #include <SDL2/SDL_timer.h>
@@ -9,10 +9,11 @@
 namespace Gui {
 class MainWindow::Impl {
 public:
-  Mi::HttpFetchWidget fetchWidget;
+  Mi::HttpWidget httpWidget;
   Mi::MapWidget mapWidget;
   Mi::WaveWidget waveWidget;
 
+  uint32_t httpTicks{};
   uint32_t mapTicks{};
   uint32_t waveTicks{};
 };
@@ -34,7 +35,13 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
   };
 
   runnerParams.dockingParams.dockableWindows = {
-      {"HttpFetcher", "MainDockSpace", [&]() { impl_->fetchWidget.show(); }},
+      {"HttpFetch", "MainDockSpace",
+       [&]() {
+         auto tic = SDL_GetTicks();
+         impl_->httpWidget.show();
+         auto toc = SDL_GetTicks();
+         impl_->httpTicks = toc - tic;
+       }},
 
       {"GeoMap", "MainDockSpace",
        [&]() {
@@ -67,6 +74,8 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
 
   runnerParams.callbacks.ShowMenus = [&] { onShowMenus(); };
 
+  runnerParams.callbacks.ShowStatus = [&] { onShowStatusbar(); };
+
   ImPlot::CreateContext();
   HelloImGui::Run(runnerParams);
   ImPlot::DestroyContext();
@@ -76,7 +85,10 @@ MainWindow::~MainWindow() {}
 
 void MainWindow::onShowMenus() {}
 
-void MainWindow::onShowToolbar() {
-  ImGui::Text("MapTicks: %d, WaveTicks: %d", impl_->mapTicks, impl_->waveTicks);
+void MainWindow::onShowToolbar() {}
+
+void MainWindow::onShowStatusbar() {
+  ImGui::Text("HttpFetch: %d, GeoMap: %d, Waveform: %d", impl_->httpTicks,
+              impl_->mapTicks, impl_->waveTicks);
 }
 } // namespace Gui

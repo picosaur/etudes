@@ -13,5 +13,6 @@ public:
 private:
   void onShowMenus();
   void onShowToolbar();
+  void onShowStatusbar();
 };
 } // namespace Gui
