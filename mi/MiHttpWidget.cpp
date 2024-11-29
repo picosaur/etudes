@@ -9,6 +9,72 @@
 #include <imgui_stdlib.h>
 
 namespace Mi {
+
+class HttpHeadersList {
+public:
+  class Item {
+  public:
+    std::string first{};
+    std::string second{};
+    bool enabled{};
+  };
+
+  HttpHeadersList() {}
+
+  HttpHeadersList(std::size_t n) { list_.resize(n); }
+
+  HttpHeadersList(const Em::HttpHeaders &emHeaders) {
+    list_.resize(emHeaders.size());
+    setHeaders(emHeaders);
+  }
+
+  auto begin() { return list_.begin(); }
+  auto end() { return list_.end(); }
+
+  auto begin() const { return list_.begin(); }
+  auto end() const { return list_.end(); }
+
+  void setHeaders(const Em::HttpHeaders &emHeaders) {
+    std::for_each(list_.begin(), list_.end(), [](auto &item) { item = {}; });
+    std::size_t i{};
+    for (const auto &header : emHeaders) {
+      if (i >= list_.size()) {
+        break;
+      }
+      list_.at(i++) = {header.first, header.second};
+    }
+    std::for_each(list_.begin(), list_.end(),
+                  [](auto &item) { item.enabled = !item.second.empty(); });
+    std::sort(list_.begin(), list_.begin() + i,
+              [](const auto &a, const auto &b) { return a.first < b.first; });
+  }
+
+  void nemptyEnable() {
+    std::for_each(list_.begin(), list_.end(),
+                  [](auto &item) { item.enabled = !item.second.empty(); });
+  }
+
+  void allSetEnabled(bool v) {
+    std::for_each(list_.begin(), list_.end(),
+                  [&](auto &item) { item.enabled = v; });
+  }
+
+  void allClear() {
+    std::for_each(list_.begin(), list_.end(), [](auto &item) { item = {}; });
+  }
+
+private:
+  std::vector<Item> list_{};
+};
+
+class HttpResponse {
+public:
+  HttpHeadersList headers;
+  std::string status;
+  std::string text;
+  std::unique_ptr<Image> image;
+};
+
 class HttpWidget::Impl {
 public:
   std::string url{"https://a.tile.openstreetmap.org/0/0/0.png"};
@@ -16,19 +82,9 @@ public:
   TextEditor teditor;
   MemoryEditor meditor;
 
-  class ReqHeaderItem {
-  public:
-    std::string first{};
-    std::string second{};
-    bool enabled{};
-  };
-  std::vector<ReqHeaderItem> reqHeaders{99};
-
-  Em::HttpHeaders respHeaders;
-  int respMode{};
-  std::string respStatus;
-  std::unique_ptr<Image> respImage;
-  std::string respText;
+  HttpHeadersList reqHeaders{99};
+  HttpResponse resp;
+  int respDisplMode{};
 
   Impl();
   void updateData();
@@ -65,25 +121,23 @@ void HttpWidget::show() {
 
 HttpWidget::Impl::Impl() {
   teditor.SetReadOnly(true);
-  std::for_each(reqHeaders.begin(), reqHeaders.end(),
-                [](auto &item) { item = {}; });
+  setBrowserReqHeaders(url);
 }
 
 void HttpWidget::Impl::updateData() {
-  respHeaders = fetcher->responseHeaders();
-  respStatus = fetcher->statusText();
-  fetcher->assignData(respText);
-  respImage = std::make_unique<Image>((const std::byte *)respText.data(),
-                                      respText.size());
-  teditor.SetText(respText);
+  resp.headers = fetcher->responseHeaders();
+  resp.status = fetcher->statusText();
+  fetcher->assignData(resp.text);
+  resp.image = std::make_unique<Image>((const std::byte *)resp.text.data(),
+                                       resp.text.size());
+  teditor.SetText(resp.text);
 }
 
 void HttpWidget::Impl::showRequest() {
   ImGui::InputText("URL", &url);
   ImGui::SameLine();
   if (ImGui::Button("Fetch")) {
-    respStatus = {};
-    respText = {};
+    resp = {};
     fetcher = std::make_unique<Em::HttpFetcher>(url, getReqHeaders());
   }
   showReqHeadersTable();
@@ -94,7 +148,7 @@ void HttpWidget::Impl::showResponse() {
   ImGui::TextUnformatted("Status");
   ImGui::SameLine();
   ImGui::SetNextItemWidth(-1.f);
-  ImGui::InputText("##", &respStatus);
+  ImGui::InputText("##", &resp.status);
 
   if (ImGui::CollapsingHeader("Headers")) {
     showRespHeadersTable();
@@ -103,22 +157,22 @@ void HttpWidget::Impl::showResponse() {
   ImGui::AlignTextToFramePadding();
   ImGui::TextUnformatted("Display As");
   ImGui::SameLine();
-  ImGui::RadioButton("None", &respMode, 0);
+  ImGui::RadioButton("None", &respDisplMode, 0);
   ImGui::SameLine();
-  ImGui::RadioButton("Text", &respMode, 1);
+  ImGui::RadioButton("Text", &respDisplMode, 1);
   ImGui::SameLine();
-  ImGui::RadioButton("Hex", &respMode, 2);
+  ImGui::RadioButton("Hex", &respDisplMode, 2);
   ImGui::SameLine();
-  ImGui::RadioButton("Image", &respMode, 3);
+  ImGui::RadioButton("Image", &respDisplMode, 3);
 
-  if (respMode == 0) {
+  if (respDisplMode == 0) {
 
-  } else if (respMode == 1) {
+  } else if (respDisplMode == 1) {
     teditor.Render("##");
-  } else if (respMode == 2) {
-    meditor.DrawContents(respText.data(), respText.size());
-  } else if (respMode == 3 && respImage) {
-    ImGui::Image(respImage->textureId(), respImage->size());
+  } else if (respDisplMode == 2) {
+    meditor.DrawContents(resp.text.data(), resp.text.size());
+  } else if (respDisplMode == 3 && resp.image) {
+    ImGui::Image(resp.image->textureId(), resp.image->size());
   }
 }
 
@@ -134,7 +188,7 @@ void HttpWidget::Impl::showRespHeadersTable() {
                             keyColWidth);
     ImGui::TableSetupColumn("Value");
     ImGui::TableHeadersRow();
-    for (const auto &header : respHeaders) {
+    for (const auto &header : resp.headers) {
       // row
       ImGui::PushID(&header);
       ImGui::TableNextRow();
@@ -178,23 +232,19 @@ void HttpWidget::Impl::showReqHeadersTable() {
 
   //
   if (ImGui::Button("Clear")) {
-    std::for_each(reqHeaders.begin(), reqHeaders.end(),
-                  [](auto &item) { item = {}; });
+    reqHeaders.allClear();
   }
   ImGui::SameLine();
   if (ImGui::Button("Enable ALL")) {
-    std::for_each(reqHeaders.begin(), reqHeaders.end(),
-                  [](auto &item) { item.enabled = true; });
+    reqHeaders.allSetEnabled(true);
   }
   ImGui::SameLine();
   if (ImGui::Button("Enable N-E")) {
-    std::for_each(reqHeaders.begin(), reqHeaders.end(),
-                  [](auto &item) { item.enabled = !item.second.empty(); });
+    reqHeaders.nemptyEnable();
   }
   ImGui::SameLine();
   if (ImGui::Button("Disable ALL")) {
-    std::for_each(reqHeaders.begin(), reqHeaders.end(),
-                  [](auto &item) { item.enabled = {}; });
+    reqHeaders.allSetEnabled(false);
   }
 
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
@@ -243,29 +293,13 @@ void HttpWidget::Impl::showReqHeadersTable() {
 }
 
 void HttpWidget::Impl::setBrowserReqHeaders(const std::string &url) {
-  std::for_each(reqHeaders.begin(), reqHeaders.end(),
-                [](auto &item) { item = {}; });
 
-  auto emHeaders = Em::Http::GetBrowserRequestHeaders(Em::Http::UrlToHost(url));
-  std::size_t i{};
-  for (const auto &header : emHeaders) {
-    reqHeaders.at(i++) = {header.first, header.second};
-  }
-
-  std::for_each(reqHeaders.begin(), reqHeaders.end(),
-                [](auto &item) { item.enabled = !item.second.empty(); });
+  reqHeaders.setHeaders(
+      Em::Http::GetBrowserRequestHeaders(Em::Http::UrlToHost(url)));
 }
 
 void HttpWidget::Impl::setStandardReqHeaders() {
-  std::for_each(reqHeaders.begin(), reqHeaders.end(),
-                [](auto &item) { item = {}; });
-  auto emHeaders = Em::Http::GetStandardHeaders();
-  std::size_t i{};
-  for (const auto &header : emHeaders) {
-    reqHeaders.at(i++) = {header.first, header.second};
-  }
-  std::for_each(reqHeaders.begin(), reqHeaders.end(),
-                [](auto &item) { item.enabled = !item.second.empty(); });
+  reqHeaders.setHeaders(Em::Http::GetStandardHeaders());
 }
 
 Em::HttpHeaders HttpWidget::Impl::getReqHeaders() const {
