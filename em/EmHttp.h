@@ -5,11 +5,11 @@
 namespace Em {
 namespace Http {
 
-const std::string UrlToHost(const std::string &url);
+std::string UrlRoot(const std::string &url);
+std::string UrlHost(const std::string &url);
 
-HttpHeaders GetBrowserRequestHeaders(const std::string &host = {});
-
-HttpHeaders GetStandardHeaders();
+HttpHeaders BrowserRequestHeaders(const std::string &host = {});
+HttpHeaders StandardRequestHeaders();
 
 } // namespace Http
 } // namespace Em

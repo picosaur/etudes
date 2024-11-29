@@ -94,11 +94,9 @@ public:
   std::string data;
   httplib::Response response;
 
-  std::string host() { return UrlToHost(url); }
-
   void fetch() {
     future = std::async(std::launch::async, [this]() {
-      auto cli = httplib::Client(host());
+      auto cli = httplib::Client(UrlRoot(url));
       cli.set_connection_timeout(1, 0);
       cli.enable_server_certificate_verification(false);
       cli.Get(

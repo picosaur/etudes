@@ -179,13 +179,12 @@ void HttpWidget::Impl::showResponse() {
 void HttpWidget::Impl::showRespHeadersTable() {
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.f);
   if (ImGui::BeginTable("ResponseHeadersTable", 3, ImGuiTableFlags_Borders)) {
-    static float keyColWidth{};
-    if (keyColWidth < 1.0) {
-      keyColWidth = ImGui::CalcTextSize("reference-text-used-for-calc-width").x;
+    static float keyColW{};
+    if (keyColW < 1.f) {
+      keyColW = ImGui::CalcTextSize("reference-text-used-for-calc-width").x;
     }
     ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed);
-    ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed,
-                            keyColWidth);
+    ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, keyColW);
     ImGui::TableSetupColumn("Value");
     ImGui::TableHeadersRow();
     for (const auto &header : resp.headers) {
@@ -295,11 +294,11 @@ void HttpWidget::Impl::showReqHeadersTable() {
 void HttpWidget::Impl::setBrowserReqHeaders(const std::string &url) {
 
   reqHeaders.setHeaders(
-      Em::Http::GetBrowserRequestHeaders(Em::Http::UrlToHost(url)));
+      Em::Http::BrowserRequestHeaders(Em::Http::UrlHost(url)));
 }
 
 void HttpWidget::Impl::setStandardReqHeaders() {
-  reqHeaders.setHeaders(Em::Http::GetStandardHeaders());
+  reqHeaders.setHeaders(Em::Http::StandardRequestHeaders());
 }
 
 Em::HttpHeaders HttpWidget::Impl::getReqHeaders() const {

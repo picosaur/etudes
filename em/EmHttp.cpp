@@ -4,23 +4,53 @@
 namespace Em {
 namespace Http {
 
-const std::string UrlToHost(const std::string &url) {
-  const auto http_pos = url.find("http");
-  if (http_pos == std::string::npos) {
-    throw std::runtime_error("Url does not start with http");
+class UrlHelper {
+
+public:
+  std::string url;
+  std::size_t http_pos;
+  std::size_t double_slash_pos;
+  std::size_t slash_pos;
+
+  UrlHelper(const std::string &url_) : url{url_} {
+    http_pos = url.find("http");
+    if (http_pos == std::string::npos) {
+      throw std::runtime_error("Url does not start with http");
+    }
+    double_slash_pos = url.find("//");
+    if (double_slash_pos == std::string::npos) {
+      throw std::runtime_error("Url does not contain //");
+    }
+    slash_pos = url.find('/', double_slash_pos + 2);
+    if (slash_pos == std::string::npos) {
+      slash_pos = url.length();
+    }
   }
-  const auto double_slash_pos = url.find("//");
-  if (double_slash_pos == std::string::npos) {
-    throw std::runtime_error("Url does not contain //");
+
+  std::string root() const { return url.substr(0, slash_pos); }
+
+  std::string host() const {
+    return url.substr(double_slash_pos + 2, slash_pos - double_slash_pos - 2);
   }
-  auto slash_pos = url.find('/', double_slash_pos + 2);
-  if (slash_pos == std::string::npos) {
-    slash_pos = url.length();
+};
+
+std::string UrlRoot(const std::string &url) {
+  try {
+    return UrlHelper(url).root();
+  } catch (const std::exception &err) {
   }
-  return url.substr(0, slash_pos);
+  return {};
 }
 
-HttpHeaders GetBrowserRequestHeaders(const std::string &host) {
+std::string UrlHost(const std::string &url) {
+  try {
+    return UrlHelper(url).host();
+  } catch (const std::exception &err) {
+  }
+  return {};
+}
+
+HttpHeaders BrowserRequestHeaders(const std::string &host) {
   HttpHeaders headers{
       {"Accept",
        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
@@ -40,7 +70,7 @@ HttpHeaders GetBrowserRequestHeaders(const std::string &host) {
   return headers;
 }
 
-HttpHeaders GetStandardHeaders() {
+HttpHeaders StandardRequestHeaders() {
   HttpHeaders headers{{"A-IM", "feed"},
                       {"Accept", "text/html"},
                       {"Accept-Charset", "utf-8"},

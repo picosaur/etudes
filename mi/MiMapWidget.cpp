@@ -1,8 +1,9 @@
 #include "MiMapWidget.h"
+#include "EmHttp.h"
 #include "EmHttpFetcher.h"
 #include "MiImage.h"
 #include "MiMapPlot.h"
-#include <iostream>
+#include <imgui_stdlib.h>
 
 namespace Mi {
 template <typename Tk, typename Tv> class KeyListItem {
@@ -91,39 +92,125 @@ public:
         return it->value->image->textureId();
       }
     } else {
-      insert(index, {.fetcher = std::make_unique<Em::HttpFetcher>(
-                         MapPlot::GetTileUrl(index, url)),
-                     .used = true});
+      insert(index,
+             {.fetcher = std::make_unique<Em::HttpFetcher>(
+                  MapPlot::GetTileUrl(index, url),
+                  Em::Http::BrowserRequestHeaders(Em::Http::UrlHost(url))),
+              .used = true});
     }
     return 0;
   }
 };
 
-class MapWidget::Impl {
+class TileMap {
 public:
-  std::string tileUrl{"https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"};
-  // https://t2.openseamap.org/tile/{z}/{x}/{y}.png
-  // https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png
+  static constexpr const char *A_TILE_OPENSTREETMAP{
+      "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"};
+  static constexpr const char *T2_OPENSEAMAP{
+      "https://t2.openseamap.org/tile/{z}/{x}/{y}.png"};
+  static constexpr const char *TILES_OPENSEAMAP{
+      "https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png"};
+  static constexpr const char *ARC_IMAGERY{
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/"
+      "MapServer/tile/{z}/{y}/{x}"};
+
+  bool enabled{};
+  std::string url{A_TILE_OPENSTREETMAP};
   TileList tiles;
+
+  static float getUrlInpWidth() {
+    static float w{};
+    if (w < 1.f) {
+      w = ImGui::CalcTextSize(
+              "https://reference-text-used-for-calc-width/{z}/{x}/{y}.png")
+              .x;
+      w *= 2.0;
+    }
+    return w;
+  }
+
+  TileMap() {}
+
+  TileMap(const std::string &url_, bool enabled_ = true)
+      : url{url_}, enabled{enabled_} {}
+
+  void showInputs() {
+    ImGui::PushID(this);
+    ImGui::Checkbox("Enabled", &enabled);
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(getUrlInpWidth());
+    ImGui::InputText("URL", &url);
+    ImGui::SameLine();
+    if (ImGui::Button("Apply")) {
+      tiles = {};
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("OSM-A")) {
+      url = A_TILE_OPENSTREETMAP;
+      tiles = {};
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("SEA-T2")) {
+      url = T2_OPENSEAMAP;
+      tiles = {};
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("SEA-TILES")) {
+      url = TILES_OPENSEAMAP;
+      tiles = {};
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("ARC-IMAGERY")) {
+      url = ARC_IMAGERY;
+      tiles = {};
+    }
+
+    // ImGui::Text("Tiles %zu", tiles.size());
+    ImGui::PopID();
+  }
+
+  void plotMap() {
+    if (enabled) {
+      ImGui::PushID(this);
+      tiles.setUnused();
+      MapPlot::PlotMap("##", [this](const auto &index) {
+        return tiles.getTile(index, url);
+      });
+      tiles.removeUnused();
+      ImGui::PopID();
+    }
+  }
 };
 
-MapWidget::MapWidget() : impl_{std::make_unique<Impl>()} {
-  impl_->tileUrl = "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png";
-}
+class MapWidget::Impl {
+public:
+  TileMap tileMap1{TileMap::A_TILE_OPENSTREETMAP};
+  TileMap tileMap2{TileMap::TILES_OPENSEAMAP};
+};
+
+MapWidget::MapWidget() : impl_{std::make_unique<Impl>()} {}
 
 MapWidget::~MapWidget() {}
 
 void MapWidget::show() {
-  ImGui::Text("Tiles %zu", impl_->tiles.size());
-  if (MapPlot::BeginMapPlot("MapPlot", {-1, -1})) {
-    impl_->tiles.setUnused();
+  // Layer 1
+  ImGui::AlignTextToFramePadding();
+  ImGui::TextUnformatted("Layer 1");
+  ImGui::SameLine();
+  impl_->tileMap1.showInputs();
+
+  // Layer 2
+  ImGui::AlignTextToFramePadding();
+  ImGui::TextUnformatted("Layer 2");
+  ImGui::SameLine();
+  impl_->tileMap2.showInputs();
+
+  if (MapPlot::BeginMapPlot("##", {-1, -1})) {
     MapPlot::SetupMapPlot();
-    MapPlot::PlotMap("MapMap", [this](const auto &index) {
-      return impl_->tiles.getTile(index, impl_->tileUrl);
-    });
+    impl_->tileMap1.plotMap();
+    impl_->tileMap2.plotMap();
     MapPlot::PlotTileGrid("MapGrid");
     MapPlot::EndMapPlot();
-    impl_->tiles.removeUnused();
   }
 }
 } // namespace Mi
