@@ -22,4 +22,5 @@ public:
 
   void assignData(std::string &str) const;
 };
+
 } // namespace Em

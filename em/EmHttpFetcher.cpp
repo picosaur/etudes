@@ -79,10 +79,13 @@ void HttpFetcher::assignData(std::string &str) const {
 
 #else
 
+#include "EmHttp.h"
 #include <future>
 #include <httplib.h>
 
 namespace Em {
+using namespace Http;
+
 class HttpFetcher::Impl {
 public:
   std::string url;
@@ -91,21 +94,7 @@ public:
   std::string data;
   httplib::Response response;
 
-  std::string host() const {
-    const auto http_pos = url.find("http");
-    if (http_pos == std::string::npos) {
-      throw std::runtime_error("Url does not start with http");
-    }
-    const auto double_slash_pos = url.find("//");
-    if (double_slash_pos == std::string::npos) {
-      throw std::runtime_error("Url does not contain //");
-    }
-    auto slash_pos = url.find('/', double_slash_pos + 2);
-    if (slash_pos == std::string::npos) {
-      slash_pos = url.length();
-    }
-    return url.substr(0, slash_pos);
-  }
+  std::string host() { return UrlToHost(url); }
 
   void fetch() {
     future = std::async(std::launch::async, [this]() {
