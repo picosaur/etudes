@@ -66,25 +66,48 @@ public:
   bool used{};
 };
 
-class TileList : public KeyList<MapPlot::TileIndex, TileListItem> {
+class TileList {
+  KeyList<MapPlot::TileIndex, TileListItem> list_;
+
 public:
+  static auto &tileTrash() {
+    static std::vector<std::unique_ptr<TileListItem>> trash;
+    return trash;
+  };
+
   TileList() {}
+  TileList(const TileList &) = delete;
+  TileList operator=(const TileList &) = delete;
+  ~TileList() { tileTrash().clear(); }
+
+  void clear() {
+    for (auto &item : list_) {
+      tileTrash().push_back(std::move(item.value));
+    }
+    list_.erase_if([](auto &item) { return !item.value; });
+  }
 
   void setUnused() {
-    for_each([](auto &item) { item.value->used = {}; });
+    list_.for_each([](auto &item) { item.value->used = {}; });
   }
 
   void removeUnused() {
-    erase_if([](auto &item) {
-      if (item.value->fetcher && !item.value->fetcher->isDone()) {
-        return false;
+    list_.for_each([this](auto &item) {
+      if (!item.value->used) {
+        tileTrash().push_back(std::move(item.value));
       }
-      return !item.value->used;
     });
+    list_.erase_if([](auto &item) { return !item.value; });
+    tileTrash().erase(std::remove_if(tileTrash().begin(), tileTrash().end(),
+                                     [](const auto &item) {
+                                       return item->fetcher &&
+                                              item->fetcher->isDone();
+                                     }),
+                      tileTrash().end());
   }
 
   ImTextureID getTile(const MapPlot::TileIndex &index, const std::string &url) {
-    if (auto it{find(index)}; it != end()) {
+    if (auto it{list_.find(index)}; it != list_.end()) {
       it->value->used = true;
       if (it->value->image) {
         return it->value->image->textureId();
@@ -96,11 +119,11 @@ public:
         return it->value->image->textureId();
       }
     } else {
-      insert(index,
-             {.fetcher = std::make_unique<Em::HttpFetcher>(
-                  MapPlot::GetTileUrl(index, url),
-                  Em::Http::BrowserRequestHeaders(Em::Http::UrlHost(url))),
-              .used = true});
+      list_.insert(
+          index, {.fetcher = std::make_unique<Em::HttpFetcher>(
+                      MapPlot::GetTileUrl(index, url),
+                      Em::Http::BrowserRequestHeaders(Em::Http::UrlHost(url))),
+                  .used = true});
     }
     return 0;
   }
@@ -148,27 +171,27 @@ public:
     ImGui::InputText("URL", &url);
     ImGui::SameLine();
     if (ImGui::Button("Apply")) {
-      tiles = {};
+      tiles.clear();
     }
     ImGui::SameLine();
     if (ImGui::Button("OSM-A")) {
       url = A_TILE_OPENSTREETMAP;
-      tiles = {};
+      tiles.clear();
     }
     ImGui::SameLine();
     if (ImGui::Button("SEA-T2")) {
       url = T2_OPENSEAMAP;
-      tiles = {};
+      tiles.clear();
     }
     ImGui::SameLine();
     if (ImGui::Button("SEA-TILES")) {
       url = TILES_OPENSEAMAP;
-      tiles = {};
+      tiles.clear();
     }
     ImGui::SameLine();
     if (ImGui::Button("ARC-IMAGERY")) {
       url = ARC_IMAGERY;
-      tiles = {};
+      tiles.clear();
     }
 
     // ImGui::Text("Tiles %zu", tiles.size());

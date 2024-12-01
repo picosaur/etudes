@@ -14,6 +14,7 @@ public:
   ~HttpFetcher();
 
   bool isDone() const;
+
   std::string statusText() const;
   HttpHeaders responseHeaders() const;
 

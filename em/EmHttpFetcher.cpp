@@ -93,13 +93,14 @@ public:
   std::future<void> future;
   std::string data;
   httplib::Response response;
+  std::unique_ptr<httplib::Client> cli;
 
   void fetch() {
     future = std::async(std::launch::async, [this]() {
-      auto cli = httplib::Client(UrlRoot(url));
-      cli.set_connection_timeout(1, 0);
-      cli.enable_server_certificate_verification(false);
-      cli.Get(
+      cli = std::make_unique<httplib::Client>(UrlRoot(url));
+      cli->set_connection_timeout(1, 0);
+      cli->enable_server_certificate_verification(false);
+      cli->Get(
           url, headers,
           [&](const httplib::Response &response_) {
             this->response = response_;
