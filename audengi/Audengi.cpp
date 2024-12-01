@@ -5,7 +5,7 @@ namespace Audengi {
 
 class Manager::Impl {
 public:
-  DriverList allDevices;
+  DriverList drivers;
 
   static auto listDrivers() {
     std::vector<std::string> list;
@@ -22,7 +22,7 @@ public:
     for (int i{}; i < n; ++i) {
       DeviceInfo info;
       info.name = SDL_GetAudioDeviceName(i, iscapture);
-      list.push_back(std::move(info));
+      list.append(std::move(info));
     }
     return list;
   }
@@ -51,6 +51,7 @@ DeviceList Manager::listRecordingDevices() const {
 }
 
 const DriverList &Manager::discoverAndTest() {
+  impl_->drivers.clear();
   auto drivers = listDrivers();
   for (const auto &drv : drivers) {
     initDriver(drv);
@@ -58,12 +59,13 @@ const DriverList &Manager::discoverAndTest() {
     drvInfo.name = drv;
     drvInfo.playbackDevices = listPlaybackDevices();
     drvInfo.recordingDevices = listRecordingDevices();
-    impl_->allDevices.push_back(drvInfo);
+    impl_->drivers.append(drvInfo);
     quitDriver();
   }
-  return impl_->allDevices;
+  impl_->drivers.sort();
+  return impl_->drivers;
 }
 
-const DriverList &Manager::allDevices() const { return impl_->allDevices; }
+const DriverList &Manager::drivers() const { return impl_->drivers; }
 
 } // namespace Audengi

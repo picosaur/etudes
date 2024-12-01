@@ -1,6 +1,5 @@
 #include "MiAudengiGui.h"
 #include "Audengi.h"
-#include <algorithm>
 #include <imgui.h>
 
 namespace Mi {
@@ -11,76 +10,82 @@ namespace AudengiGui {
 class DriverCombo::Impl {
 public:
   Audengi::DriverList list;
-  std::string curr;
-
-  bool currInList() const { return false; }
+  std::string currName;
 };
 
 DriverCombo::DriverCombo() : impl_{std::make_unique<Impl>()} {}
 
 DriverCombo::~DriverCombo() {}
 
-void DriverCombo::show() {
+bool DriverCombo::show() {
+  bool changed{};
   ImGui::PushID(this);
-  if (ImGui::BeginCombo("Driver", impl_->curr.c_str())) {
+  if (ImGui::BeginCombo("Driver", impl_->currName.c_str())) {
     for (const auto &item : impl_->list) {
-      if (ImGui::Selectable(item.name.c_str(), item.name == impl_->curr)) {
-        impl_->curr = item.name;
+      if (ImGui::Selectable(item.name.c_str(), item.name == impl_->currName)) {
+        impl_->currName = item.name;
+        changed = true;
       }
     }
     ImGui::EndCombo();
   }
   ImGui::PopID();
+  return changed;
 }
 
 void DriverCombo::setList(const Audengi::DriverList &list) {
   impl_->list = list;
-  if (!impl_->currInList()) {
-    if (impl_->list.empty()) {
-      impl_->curr = {};
-    }
+  if (impl_->list.empty()) {
+    impl_->currName = {};
+  } else if (!impl_->list.contains(impl_->currName)) {
+    impl_->currName = impl_->list.first().name;
   }
+}
+
+bool DriverCombo::hasCurr() const { return !impl_->currName.empty(); }
+
+const Audengi::DriverInfo &DriverCombo::currDriver() const {
+  return impl_->list.at(impl_->currName);
 }
 
 // DeviceCombo
 // ----------------------------------------------------------------------------
 class DeviceCombo::Impl {
 public:
-  std::vector<Audengi::DeviceInfo> list;
-  std::string curr;
-
-  bool currInList() const {
-    /*
-    return std::find(list.begin(), list.end(), [this](const auto &item) {
-             return item.name == curr;
-           }) != list.end();
-*/
-    return false;
-  }
+  std::string label;
+  Audengi::DeviceList list;
+  std::string currName;
 };
 
-DeviceCombo::DeviceCombo() : impl_{std::make_unique<Impl>()} {}
+DeviceCombo::DeviceCombo(const std::string &label)
+    : impl_{std::make_unique<Impl>()} {
+  impl_->label = label;
+}
 
 DeviceCombo::~DeviceCombo() {}
 
-void DeviceCombo::show() {
+bool DeviceCombo::show() {
+  bool changed{};
   ImGui::PushID(this);
-  if (ImGui::BeginCombo("Device", impl_->curr.c_str())) {
+  if (ImGui::BeginCombo(impl_->label.c_str(), impl_->currName.c_str())) {
     for (const auto &item : impl_->list) {
-      if (ImGui::Selectable(item.name.c_str(), item.name == impl_->curr)) {
-        impl_->curr = item.name;
+      if (ImGui::Selectable(item.name.c_str(), item.name == impl_->currName)) {
+        impl_->currName = item.name;
+        changed = true;
       }
     }
     ImGui::EndCombo();
   }
   ImGui::PopID();
+  return changed;
 }
 
-void DeviceCombo::update() {
-  if (!impl_->currInList()) {
-    if (impl_->list.empty()) {
-      impl_->curr = {};
-    }
+void DeviceCombo::setList(const Audengi::DeviceList &list) {
+  impl_->list = list;
+  if (impl_->list.empty()) {
+    impl_->currName = {};
+  } else if (!impl_->list.contains(impl_->currName)) {
+    impl_->currName = impl_->list.first().name;
   }
 }
 
@@ -89,8 +94,23 @@ void DeviceCombo::update() {
 class DemoWidget::Impl {
 public:
   DriverCombo driverCombo;
-  DeviceCombo deviceCombo;
-  std::vector<Audengi::DeviceInfo> inpDevices, outDevices;
+  DeviceCombo inpDeviceCombo{"Recording"}, outDeviceCombo{"Playback"};
+
+  void updateDriverCombo() {
+    auto &man = Audengi::Manager::Get();
+    man.discoverAndTest();
+    driverCombo.setList(man.drivers());
+  }
+
+  void updateDeviceCombo() {
+    if (driverCombo.hasCurr()) {
+      outDeviceCombo.setList(driverCombo.currDriver().playbackDevices);
+      inpDeviceCombo.setList(driverCombo.currDriver().recordingDevices);
+    } else {
+      outDeviceCombo.setList({});
+      inpDeviceCombo.setList({});
+    }
+  }
 };
 
 DemoWidget::DemoWidget() : impl_{std::make_unique<Impl>()} {}
@@ -100,7 +120,8 @@ DemoWidget::~DemoWidget() {}
 void DemoWidget::show() {
   ImGui::PushID(this);
   if (ImGui::Button("Refresh")) {
-    Audengi::Manager::Get().discoverAndTest();
+    impl_->updateDriverCombo();
+    impl_->updateDeviceCombo();
   }
 
   static float refTextW{};
@@ -111,12 +132,19 @@ void DemoWidget::show() {
   // Driver Combo
   ImGui::SameLine();
   ImGui::SetNextItemWidth(refTextW);
-  impl_->driverCombo.show();
+  if (impl_->driverCombo.show()) {
+    impl_->updateDeviceCombo();
+  }
 
-  // Device Combo
+  // Playback Device Combo
   ImGui::SameLine();
-  ImGui::SetNextItemWidth(refTextW);
-  impl_->deviceCombo.show();
+  ImGui::SetNextItemWidth(refTextW * 2.f);
+  impl_->outDeviceCombo.show();
+
+  // Recording Device Combo
+  ImGui::SameLine();
+  ImGui::SetNextItemWidth(refTextW * 2.f);
+  impl_->inpDeviceCombo.show();
 
   ImGui::PopID();
 }

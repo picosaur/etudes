@@ -1,7 +1,10 @@
 #pragma once
 #include <memory>
+#include <string>
 
 namespace Audengi {
+class DriverInfo;
+class DeviceInfo;
 class DeviceList;
 class DriverList;
 } // namespace Audengi
@@ -19,8 +22,10 @@ public:
   DriverCombo();
   ~DriverCombo();
 
-  void show();
+  bool show();
   void setList(const Audengi::DriverList &list);
+  bool hasCurr() const;
+  const Audengi::DriverInfo &currDriver() const;
 };
 
 // DeviceCombo
@@ -30,11 +35,11 @@ class DeviceCombo {
   std::unique_ptr<Impl> impl_;
 
 public:
-  DeviceCombo();
+  DeviceCombo(const std::string &label = "Device");
   ~DeviceCombo();
 
-  void show();
-  void update();
+  bool show();
+  void setList(const Audengi::DeviceList &list);
 };
 
 // DemoWidget
