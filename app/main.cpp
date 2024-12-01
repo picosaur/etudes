@@ -1,6 +1,6 @@
-#include "MainWindow.h"
+#include "MiMainWindow.h"
 
 int main(int, char *[]) {
-  Gui::MainWindow mw;
+  Mi::MainWindow mw;
   return 0;
 }

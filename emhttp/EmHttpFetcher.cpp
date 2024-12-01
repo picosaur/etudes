@@ -5,6 +5,7 @@
 #include <atomic>
 #include <emscripten/fetch.h>
 #include <stdio.h>
+#include <vector>
 
 namespace Em {
 class HttpFetcher::Impl {
@@ -63,6 +64,10 @@ HttpFetcher::~HttpFetcher() {
 }
 
 std::string HttpFetcher::statusText() const { return impl_->fetch->statusText; }
+
+HttpHeaders HttpFetcher::responseHeaders() const {
+  return {};
+}
 
 bool HttpFetcher::isDone() const { return impl_->state.load() == 4; }
 

@@ -1,4 +1,5 @@
-#include "MainWindow.h"
+#include "MiMainWindow.h"
+#include "MiAudengiWidget.h"
 #include "MiHttpWidget.h"
 #include "MiMapWidget.h"
 #include "MiWaveWidget.h"
@@ -6,16 +7,17 @@
 #include <hello_imgui/hello_imgui.h>
 #include <implot.h>
 
-namespace Gui {
+namespace Mi {
 class MainWindow::Impl {
 public:
   Mi::HttpWidget httpWidget;
   Mi::MapWidget mapWidget;
   Mi::WaveWidget waveWidget;
+  Mi::AudengiWidget audengiWidget;
 
-  uint32_t httpTicks{};
-  uint32_t mapTicks{};
-  uint32_t waveTicks{};
+  int httpTicks{};
+  int mapTicks{};
+  int waveTicks{};
 };
 
 MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
@@ -51,12 +53,22 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
          impl_->mapTicks = toc - tic;
        }},
 
-      {"Waveform", "MainDockSpace", [&]() {
+      {"Waveform", "MainDockSpace",
+       [&]() {
          auto tic = SDL_GetTicks();
          impl_->waveWidget.show();
          auto toc = SDL_GetTicks();
          impl_->waveTicks = toc - tic;
-       }}};
+       }},
+
+      {"AudEngi", "MainDockSpace",
+       [&]() {
+         auto tic = SDL_GetTicks();
+         impl_->audengiWidget.show();
+         auto toc = SDL_GetTicks();
+       }},
+
+  };
 
   runnerParams.callbacks.ShowGui = [&]() {};
 
@@ -91,4 +103,4 @@ void MainWindow::onShowStatusbar() {
   ImGui::Text("HttpFetch: %d, GeoMap: %d, Waveform: %d", impl_->httpTicks,
               impl_->mapTicks, impl_->waveTicks);
 }
-} // namespace Gui
+} // namespace Mi

@@ -9,12 +9,12 @@ add_subdirectory(external/cpp-httplib)
 add_subdirectory(external/imgui_club)
 add_subdirectory(external/ImGuiColorTextEdit)
 
-add_subdirectory(gui)
-add_subdirectory(em)
-add_subdirectory(mi)
+add_subdirectory(emhttp)
+add_subdirectory(audengi)
+add_subdirectory(migui)
 
 set(HELLOIMGUI_USE_SDL2 ON CACHE BOOL "" FORCE)
 set(HELLOIMGUI_HAS_OPENGL3 ON CACHE BOOL "" FORCE)
 
 hello_imgui_add_app(imhello app/main.cpp)
-target_link_libraries(${PROJECT_NAME} PUBLIC gui)
+target_link_libraries(${PROJECT_NAME} PUBLIC migui)

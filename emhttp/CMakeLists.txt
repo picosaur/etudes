@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.10.0)
-project(em)
+project(emhttp)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-file(GLOB_RECURSE EM_SRC *.cpp *.h)
+file(GLOB_RECURSE EMHTTP_SRC *.cpp *.h)
 
-add_library(${PROJECT_NAME} ${EM_SRC})
+add_library(${PROJECT_NAME} ${EMHTTP_SRC})
 
 target_include_directories (${PROJECT_NAME} PUBLIC .)
 
