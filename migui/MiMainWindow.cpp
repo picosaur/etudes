@@ -1,5 +1,5 @@
 #include "MiMainWindow.h"
-#include "MiAudengiWidget.h"
+#include "MiAudengiGui.h"
 #include "MiHttpWidget.h"
 #include "MiMapWidget.h"
 #include "MiWaveWidget.h"
@@ -13,7 +13,7 @@ public:
   Mi::HttpWidget httpWidget;
   Mi::MapWidget mapWidget;
   Mi::WaveWidget waveWidget;
-  Mi::AudengiWidget audengiWidget;
+  Mi::AudengiGui::DemoWidget audengiWidget;
 
   int httpTicks{};
   int mapTicks{};

@@ -5,6 +5,8 @@
 
 namespace Audengi {
 
+// DeviceInfo
+// ----------------------------------------------------------------------------
 class DeviceInfo {
 public:
   std::string name{};
@@ -14,29 +16,45 @@ public:
   int padding{};
   int bufsize{};
 };
+class DeviceList : public std::vector<DeviceInfo> {};
 
-class Engine {
-  Engine();
-  ~Engine();
+// DriverInfo
+// ----------------------------------------------------------------------------
+class DriverInfo {
+public:
+  std::string name{};
+  DeviceList playbackDevices;
+  DeviceList recordingDevices;
+};
+class DriverList : public std::vector<DriverInfo> {};
+
+// Manager
+// ----------------------------------------------------------------------------
+class Manager {
+  Manager();
+  ~Manager();
 
   class Impl;
   std::unique_ptr<Impl> impl_;
 
 public:
-  Engine(const Engine &) = delete;
-  Engine &operator=(Engine &) = delete;
+  Manager(const Manager &) = delete;
+  Manager &operator=(Manager &) = delete;
 
-  static Engine &Get() {
-    static Engine instance;
+  static Manager &Get() {
+    static Manager instance;
     return instance;
   }
 
-  void init(const std::string &driver);
-  void quit();
+  void initDriver(const std::string &driver);
+  void quitDriver();
 
-  std::vector<std::string> audioDrivers() const;
-  std::vector<DeviceInfo> playbackDevices() const;
-  std::vector<DeviceInfo> recordingDevices() const;
+  std::vector<std::string> listDrivers() const;
+  DeviceList listPlaybackDevices() const;
+  DeviceList listRecordingDevices() const;
+
+  const DriverList &discoverAndTest();
+  const DriverList &allDevices() const;
 };
 
 } // namespace Audengi
