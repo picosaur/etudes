@@ -1,38 +1,12 @@
 #include "MiMapPlot.h"
-#include <algorithm>
 #include <imgui_internal.h>
 #include <implot.h>
 #include <implot_internal.h>
+#include <memory>
 #include <string>
-#include <vector>
 
 namespace Mi {
 namespace MapPlot {
-// Helpers
-//-------------------------------------------------------------------------
-std::string GetTileUrl(const TileIndex &index, const std::string &baseUrl) {
-  auto url{baseUrl};
-  if (auto pos_x{url.find("{x}")}; pos_x < url.size()) {
-    url.replace(pos_x, 3, std::to_string(index.x));
-  }
-  if (auto pos_y{url.find("{y}")}; pos_y < url.size()) {
-    url.replace(pos_y, 3, std::to_string(index.y));
-  }
-  if (auto pos_z{url.find("{z}")}; pos_z < url.size()) {
-    url.replace(pos_z, 3, std::to_string(index.z));
-  }
-  return url;
-}
-
-std::string GetTileLabel(const TileIndex &index) {
-  return std::to_string(index.z) + '/' + std::to_string(index.x) + '/' +
-         std::to_string(index.y);
-}
-
-ImPlotPoint GetCenterPoint(const ImPlotPoint &p1, const ImPlotPoint &p2) {
-  return {(p1.x + p2.x) / 2., (p1.y + p2.y) / 2.};
-}
-
 // Context
 //-------------------------------------------------------------------------
 template <typename T> class Context {
@@ -72,35 +46,8 @@ public:
 
 using GridContext = Context<GridData>;
 
-// MapGeom
+// Plotters
 // ------------------------------------------------------------------------
-class MapGeom {
-public:
-  MapGeom(double tileSize) {
-    plotLims = ImPlot::GetPlotLimits(ImAxis_X1, ImAxis_Y1);
-    plotSize = ImPlot::GetPlotSize(); // pixels
-
-    tileRes = plotSize.x / plotLims.X.Size();
-    zoom = std::clamp(int(log2(tileRes / tileSize)), minZoom, maxZoom);
-    tilesNum = (1 << zoom); // 2^zoom
-    tileSizeScaled = 1. / double(tilesNum);
-
-    minTX = std::clamp(int(plotLims.X.Min * tilesNum), 0, tilesNum - 1);
-    maxTX = std::clamp(int(plotLims.X.Max * tilesNum), 0, tilesNum - 1);
-    minTY = std::clamp(int(plotLims.Y.Min * tilesNum), 0, tilesNum - 1);
-    maxTY = std::clamp(int(plotLims.Y.Max * tilesNum), 0, tilesNum - 1);
-  }
-
-  int minZoom{0}, maxZoom{18};
-  ImPlotRect plotLims{};
-  ImVec2 plotSize{};
-  double tileRes{};
-  int zoom{};
-  int tilesNum{};
-  double tileSizeScaled{};
-  int minTX{}, maxTX{}, minTY{}, maxTY{};
-};
-
 bool BeginMapPlot(const char *title_id, const ImVec2 &size, ImPlotFlags flags) {
   return ImPlot::BeginPlot(title_id, size, flags);
 }
@@ -118,9 +65,8 @@ void EndMapPlot() { return ImPlot::EndPlot(); }
 void PlotMap(const char *label_id, const TileGetter &getter,
              const TileCleaner &cleaner, float tileSize, const ImVec2 &uv0,
              const ImVec2 &uv1) {
-  auto *ctx = MapContext::Get()->pool.GetOrAddByKey(ImGui::GetID(label_id));
-  auto geom = MapGeom(tileSize);
-
+  // auto *ctx = MapContext::Get()->pool.GetOrAddByKey(ImGui::GetID(label_id));
+  auto geom = GetMapGeometry(tileSize);
   ImPlotPoint bmin{}, bmax{};
   for (auto x{geom.minTX}; x < geom.maxTX + 1; ++x) {
     bmin.x = double(x) * geom.tileSizeScaled;
@@ -138,8 +84,7 @@ void PlotTileGrid(const char *label_id, float tileSize, ImU32 color,
                   float thickness) {
   auto *ctx = GridContext::Get()->pool.GetOrAddByKey(ImGui::GetID(label_id));
   ctx->strings.clear();
-  auto geom = MapGeom(tileSize);
-
+  auto geom = GetMapGeometry(tileSize);
   ImPlotPoint bmin{}, bmax{};
   for (auto x{geom.minTX}; x < geom.maxTX + 1; ++x) {
     bmin.x = double(x) * geom.tileSizeScaled;
@@ -167,5 +112,36 @@ void PlotRect(const char *label_id, ImPlotPoint bmin, ImPlotPoint bmax,
     ImPlot::EndItem();
   }
 }
+
+// Helpers
+//-------------------------------------------------------------------------
+std::string GetTileUrl(const TileIndex &index, const std::string &baseUrl) {
+  auto url{baseUrl};
+  if (auto pos_x{url.find("{x}")}; pos_x < url.size()) {
+    url.replace(pos_x, 3, std::to_string(index.x));
+  }
+  if (auto pos_y{url.find("{y}")}; pos_y < url.size()) {
+    url.replace(pos_y, 3, std::to_string(index.y));
+  }
+  if (auto pos_z{url.find("{z}")}; pos_z < url.size()) {
+    url.replace(pos_z, 3, std::to_string(index.z));
+  }
+  return url;
+}
+
+std::string GetTileLabel(const TileIndex &index) {
+  return std::to_string(index.z) + '/' + std::to_string(index.x) + '/' +
+         std::to_string(index.y);
+}
+
+ImPlotPoint GetCenterPoint(const ImPlotPoint &p1, const ImPlotPoint &p2) {
+  return {(p1.x + p2.x) / 2., (p1.y + p2.y) / 2.};
+}
+
+MapGeometry GetMapGeometry(double tileSize) {
+  return MapGeometry(ImPlot::GetPlotSize(),
+                     ImPlot::GetPlotLimits(ImAxis_X1, ImAxis_Y1), tileSize);
+}
+
 } // namespace MapPlot
 } // namespace Mi

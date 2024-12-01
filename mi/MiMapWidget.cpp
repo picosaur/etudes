@@ -6,6 +6,8 @@
 #include <imgui_stdlib.h>
 
 namespace Mi {
+// KeyList
+// ----------------------------------------------------------------------------
 template <typename Tk, typename Tv> class KeyListItem {
 public:
   Tk key;
@@ -55,6 +57,8 @@ public:
   }
 };
 
+// TileList
+// ----------------------------------------------------------------------------
 class TileListItem {
 public:
   std::unique_ptr<Em::HttpFetcher> fetcher;
@@ -102,6 +106,8 @@ public:
   }
 };
 
+// TileMap
+// ----------------------------------------------------------------------------
 class TileMap {
 public:
   static constexpr const char *A_TILE_OPENSTREETMAP{
@@ -182,10 +188,16 @@ public:
   }
 };
 
+// MapWidget
+// ----------------------------------------------------------------------------
 class MapWidget::Impl {
 public:
   TileMap tileMap1{TileMap::A_TILE_OPENSTREETMAP};
   TileMap tileMap2{TileMap::TILES_OPENSEAMAP};
+  MapPlot::MapGeometry geom;
+
+  // test
+  double xmin{}, xmax{};
 };
 
 MapWidget::MapWidget() : impl_{std::make_unique<Impl>()} {}
@@ -205,8 +217,21 @@ void MapWidget::show() {
   ImGui::SameLine();
   impl_->tileMap2.showInputs();
 
+  // Buttons
+  if (ImGui::Button("A")) {
+    impl_->xmin = 0.5;
+    impl_->xmax = 0.6;
+  }
+
   if (MapPlot::BeginMapPlot("##", {-1, -1})) {
+    if (impl_->xmin > 0 && impl_->xmax > 0) {
+      ImPlot::SetupAxisLimits(ImAxis_X1, impl_->xmin, impl_->xmax,
+                              ImPlotCond_Always);
+      impl_->xmin = {};
+      impl_->xmax = {};
+    }
     MapPlot::SetupMapPlot();
+    impl_->geom = MapPlot::GetMapGeometry();
     impl_->tileMap1.plotMap();
     impl_->tileMap2.plotMap();
     MapPlot::PlotTileGrid("MapGrid");
