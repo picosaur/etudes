@@ -84,20 +84,13 @@ public:
   Manager(const Manager &) = delete;
   Manager &operator=(Manager &) = delete;
 
-  static Manager &Get() {
-    static Manager instance;
-    return instance;
-  }
+  static Manager &Get();
+
+  void discoverDrivers();
+  const DriverList &drivers() const;
 
   void initDriver(const std::string &driver);
   void quitDriver();
-
-  std::vector<std::string> listDrivers() const;
-  DeviceList listPlaybackDevices() const;
-  DeviceList listRecordingDevices() const;
-
-  const DriverList &discoverAndTest();
-  const DriverList &drivers() const;
 };
 
 } // namespace Audengi

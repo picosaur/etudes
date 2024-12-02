@@ -24,48 +24,41 @@ public:
       info.name = SDL_GetAudioDeviceName(i, iscapture);
       list.append(std::move(info));
     }
+    list.sort();
     return list;
   }
 };
 
+Manager &Manager::Get() {
+  static Manager instance;
+  return instance;
+}
+
 Manager::Manager() : impl_{std::make_unique<Impl>()} {}
 
 Manager::~Manager() {}
+
+void Manager::discoverDrivers() {
+  impl_->drivers.clear();
+  auto drivers = impl_->listDrivers();
+  for (const auto &drv : drivers) {
+    initDriver(drv);
+    DriverInfo drvInfo;
+    drvInfo.name = drv;
+    drvInfo.playbackDevices = impl_->listDevices(false);
+    drvInfo.recordingDevices = impl_->listDevices(true);
+    impl_->drivers.append(drvInfo);
+    quitDriver();
+  }
+  impl_->drivers.sort();
+}
+
+const DriverList &Manager::drivers() const { return impl_->drivers; }
 
 void Manager::initDriver(const std::string &driver) {
   SDL_AudioInit(driver.c_str());
 }
 
 void Manager::quitDriver() {}
-
-std::vector<std::string> Manager::listDrivers() const {
-  return impl_->listDrivers();
-}
-
-DeviceList Manager::listPlaybackDevices() const {
-  return impl_->listDevices(false);
-}
-
-DeviceList Manager::listRecordingDevices() const {
-  return impl_->listDevices(true);
-}
-
-const DriverList &Manager::discoverAndTest() {
-  impl_->drivers.clear();
-  auto drivers = listDrivers();
-  for (const auto &drv : drivers) {
-    initDriver(drv);
-    DriverInfo drvInfo;
-    drvInfo.name = drv;
-    drvInfo.playbackDevices = listPlaybackDevices();
-    drvInfo.recordingDevices = listRecordingDevices();
-    impl_->drivers.append(drvInfo);
-    quitDriver();
-  }
-  impl_->drivers.sort();
-  return impl_->drivers;
-}
-
-const DriverList &Manager::drivers() const { return impl_->drivers; }
 
 } // namespace Audengi

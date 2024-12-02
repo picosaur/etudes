@@ -98,7 +98,7 @@ public:
 
   void updateDriverCombo() {
     auto &man = Audengi::Manager::Get();
-    man.discoverAndTest();
+    man.discoverDrivers();
     driverCombo.setList(man.drivers());
   }
 
