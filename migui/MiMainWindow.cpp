@@ -1,5 +1,5 @@
 #include "MiMainWindow.h"
-#include "MiAudengiGui.h"
+#include "MiAudeGui.h"
 #include "MiHttpWidget.h"
 #include "MiMapWidget.h"
 #include "MiWaveWidget.h"
@@ -13,7 +13,7 @@ public:
   Mi::HttpWidget httpWidget;
   Mi::MapWidget mapWidget;
   Mi::WaveWidget waveWidget;
-  Mi::AudengiGui::DemoWidget audengiWidget;
+  Mi::AudeGui::DemoWidget audeWidget;
 
   int httpTicks{};
   int mapTicks{};
@@ -64,7 +64,7 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
       {"AudEngi", "MainDockSpace",
        [&]() {
          auto tic = SDL_GetTicks();
-         impl_->audengiWidget.show();
+         impl_->audeWidget.show();
          auto toc = SDL_GetTicks();
        }},
 

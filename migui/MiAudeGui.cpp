@@ -1,9 +1,9 @@
-#include "MiAudengiGui.h"
-#include "Audengi.h"
+#include "MiAudeGui.h"
+#include "AudeManager.h"
 #include <imgui.h>
 
 namespace Mi {
-namespace AudengiGui {
+namespace AudeGui {
 
 // ============================================================================
 // BASE IMPLEMENTATIONS
@@ -379,5 +379,5 @@ void DemoWidget::show() {
   }
 }
 
-} // namespace AudengiGui
+} // namespace AudeGui
 } // namespace Mi

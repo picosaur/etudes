@@ -10,7 +10,7 @@ add_subdirectory(external/imgui_club)
 add_subdirectory(external/ImGuiColorTextEdit)
 
 add_subdirectory(emhttp)
-add_subdirectory(audengi)
+add_subdirectory(aude)
 add_subdirectory(migui)
 
 set(HELLOIMGUI_USE_SDL2 ON CACHE BOOL "" FORCE)

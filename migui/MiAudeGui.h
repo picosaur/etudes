@@ -11,7 +11,7 @@ class DriverList;
 } // namespace Aude
 
 namespace Mi {
-namespace AudengiGui {
+namespace AudeGui {
 
 // DriverCombo
 // ----------------------------------------------------------------------------
@@ -133,6 +133,6 @@ public:
   void show();
 };
 
-} // namespace AudengiGui
+} // namespace AudeGui
 
 } // namespace Mi

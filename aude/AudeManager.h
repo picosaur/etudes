@@ -29,7 +29,7 @@ public:
   const auto &at(const std::string &name) const {
     const auto it{find(name)};
     if (it == list_.end()) {
-      throw(std::out_of_range("Audengi::KeyList::at"));
+      throw(std::out_of_range("Aude::DriverDeviceList::at"));
     }
     return (*it);
   }
