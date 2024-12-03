@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace Audengi {
+namespace Aude {
 
 namespace detail {
 // KeyList
@@ -94,4 +94,4 @@ public:
   void quitDriver();
 };
 
-} // namespace Audengi
+} // namespace Aude

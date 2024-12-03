@@ -145,10 +145,10 @@ public:
 
 // DriverCombo
 // ----------------------------------------------------------------------------
-class DriverCombo::Impl : public DriverDeviceComboImpl<Audengi::DriverList> {
+class DriverCombo::Impl : public DriverDeviceComboImpl<Aude::DriverList> {
 public:
   Impl(const std::string &label)
-      : DriverDeviceComboImpl<Audengi::DriverList>{label} {}
+      : DriverDeviceComboImpl<Aude::DriverList>{label} {}
 };
 
 DriverCombo::DriverCombo(const std::string &label)
@@ -158,7 +158,7 @@ DriverCombo::~DriverCombo() {}
 
 bool DriverCombo::show() { return impl_->show(); }
 
-void DriverCombo::setList(const Audengi::DriverList &list) {
+void DriverCombo::setList(const Aude::DriverList &list) {
   impl_->setList(list);
 }
 
@@ -166,16 +166,14 @@ void DriverCombo::setCurr(const std::string &name) { impl_->setCurr(name); }
 
 bool DriverCombo::hasCurr() const { return impl_->hasCurr(); }
 
-const Audengi::DriverInfo &DriverCombo::curr() const {
-  return impl_->currItem();
-}
+const Aude::DriverInfo &DriverCombo::curr() const { return impl_->currItem(); }
 
 // DeviceCombo
 // ----------------------------------------------------------------------------
-class DeviceCombo::Impl : public DriverDeviceComboImpl<Audengi::DeviceList> {
+class DeviceCombo::Impl : public DriverDeviceComboImpl<Aude::DeviceList> {
 public:
   Impl(const std::string &label)
-      : DriverDeviceComboImpl<Audengi::DeviceList>{label} {}
+      : DriverDeviceComboImpl<Aude::DeviceList>{label} {}
 };
 
 DeviceCombo::DeviceCombo(const std::string &label)
@@ -185,7 +183,7 @@ DeviceCombo::~DeviceCombo() {}
 
 bool DeviceCombo::show() { return impl_->show(); }
 
-void DeviceCombo::setList(const Audengi::DeviceList &list) {
+void DeviceCombo::setList(const Aude::DeviceList &list) {
   impl_->setList(list);
 }
 
@@ -193,9 +191,7 @@ void DeviceCombo::setCurr(const std::string &name) { impl_->setCurr(name); }
 
 bool DeviceCombo::hasCurr() const { return impl_->hasCurr(); }
 
-const Audengi::DeviceInfo &DeviceCombo::curr() const {
-  return impl_->currItem();
-}
+const Aude::DeviceInfo &DeviceCombo::curr() const { return impl_->currItem(); }
 
 // SampleRateCombo
 // ----------------------------------------------------------------------------
@@ -302,7 +298,7 @@ void DeviceChooserWidget::show() {
 }
 
 void DeviceChooserWidget::Impl::updateDriverCombo() {
-  auto &man = Audengi::Manager::Get();
+  auto &man = Aude::Manager::Get();
   man.discoverDrivers();
   driverCombo.setList(man.drivers());
   driverCombo.setCurr(man.defaultDriver().name);
@@ -378,6 +374,9 @@ DemoWidget::~DemoWidget() {}
 void DemoWidget::show() {
   impl_->deviceChooserWidget.show();
   impl_->streamSetupWidget.show();
+  ImGui::SeparatorText("Oscillator");
+  if (ImGui::Button("Start")) {
+  }
 }
 
 } // namespace AudengiGui

@@ -1,7 +1,7 @@
 #include "Audengi.h"
 #include <SDL_audio.h>
 
-namespace Audengi {
+namespace Aude {
 
 class Manager::Impl {
 public:
@@ -103,4 +103,4 @@ DeviceInfo Manager::Impl::defaultDevice(bool isCapture) {
   return info;
 }
 
-} // namespace Audengi
+} // namespace Aude

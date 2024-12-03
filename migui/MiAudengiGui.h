@@ -3,12 +3,12 @@
 #include <string>
 #include <vector>
 
-namespace Audengi {
+namespace Aude {
 class DriverInfo;
 class DeviceInfo;
 class DeviceList;
 class DriverList;
-} // namespace Audengi
+} // namespace Aude
 
 namespace Mi {
 namespace AudengiGui {
@@ -24,10 +24,10 @@ public:
   ~DriverCombo();
 
   bool show();
-  void setList(const Audengi::DriverList &list);
+  void setList(const Aude::DriverList &list);
   void setCurr(const std::string &name);
   bool hasCurr() const;
-  const Audengi::DriverInfo &curr() const;
+  const Aude::DriverInfo &curr() const;
 };
 
 // DeviceCombo
@@ -41,10 +41,10 @@ public:
   ~DeviceCombo();
 
   bool show();
-  void setList(const Audengi::DeviceList &list);
+  void setList(const Aude::DeviceList &list);
   void setCurr(const std::string &name);
   bool hasCurr() const;
-  const Audengi::DeviceInfo &curr() const;
+  const Aude::DeviceInfo &curr() const;
 };
 
 // SampleRateCombo
