@@ -2,6 +2,7 @@
 #include "MiAudeGui.h"
 #include "MiHttpWidget.h"
 #include "MiMapWidget.h"
+#include "MiQdspGui.h"
 #include "MiWaveWidget.h"
 #include <SDL2/SDL_timer.h>
 #include <hello_imgui/hello_imgui.h>
@@ -13,6 +14,7 @@ public:
   Mi::HttpWidget httpWidget;
   Mi::MapWidget mapWidget;
   Mi::WaveWidget waveWidget;
+  Mi::QdspGui::DemoWidget qdspWidget;
   Mi::AudeGui::DemoWidget audeWidget;
 
   int httpTicks{};
@@ -60,6 +62,8 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
          auto toc = SDL_GetTicks();
          impl_->waveTicks = toc - tic;
        }},
+
+      {"Qdsp", "MainDockSpace", [&]() { impl_->qdspWidget.show(); }},
 
       {"AudEngi", "MainDockSpace",
        [&]() {

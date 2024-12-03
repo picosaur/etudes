@@ -67,7 +67,7 @@ void WaveWidget::show() {
       ImPlot::EndItem();
     }
 
-    // ImPlot::PlotLine("Ref", impl_->y.data(), impl_->y.size());
+    ImPlot::PlotLine("Ref", impl_->y.data(), impl_->y.size());
 
     impl_->pxsx = pxsx;
     impl_->sxpx = sxpx;

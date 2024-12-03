@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.10.0)
-project(audengi)
+project(aude)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-file(GLOB_RECURSE AUDENGI_SRC *.cpp *.h)
+file(GLOB_RECURSE AUDE_SRC *.cpp *.h)
 
-add_library(${PROJECT_NAME} ${AUDENGI_SRC})
+add_library(${PROJECT_NAME} ${AUDE_SRC})
 
 target_include_directories (${PROJECT_NAME} PUBLIC .)
 
