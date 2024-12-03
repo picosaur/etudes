@@ -7,9 +7,10 @@
 
 namespace Audengi {
 
+namespace detail {
 // KeyList
 // ----------------------------------------------------------------------------
-template <typename T> class KeyList {
+template <typename T> class DriverDeviceList {
   std::vector<T> list_;
 
 public:
@@ -45,31 +46,30 @@ public:
     });
   }
 };
+} // namespace detail
 
 // DeviceInfo
 // ----------------------------------------------------------------------------
 class DeviceInfo {
 public:
   std::string name{};
-  int channum{};
-  int silence{};
-  int samples{};
-  int padding{};
-  int bufsize{};
+  bool isCapture{};
 };
 
-class DeviceList : public KeyList<DeviceInfo> {};
+class DeviceList : public detail::DriverDeviceList<DeviceInfo> {};
 
 // DriverInfo
 // ----------------------------------------------------------------------------
 class DriverInfo {
 public:
   std::string name{};
+  DeviceList captureDevices;
   DeviceList playbackDevices;
-  DeviceList recordingDevices;
+  DeviceInfo defaultCaptureDevice;
+  DeviceInfo defaultPlaybackDevice;
 };
 
-class DriverList : public KeyList<DriverInfo> {};
+class DriverList : public detail::DriverDeviceList<DriverInfo> {};
 
 // Manager
 // ----------------------------------------------------------------------------
@@ -88,6 +88,7 @@ public:
 
   void discoverDrivers();
   const DriverList &drivers() const;
+  const DriverInfo &defaultDriver() const;
 
   void initDriver(const std::string &driver);
   void quitDriver();
