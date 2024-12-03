@@ -1,7 +1,9 @@
 #include "MiQdspGui.h"
+#include "QdspFft.h"
 #include "QdspNoiseGen.h"
 #include <imgui.h>
 #include <implot.h>
+#include <string>
 #include <vector>
 
 namespace Mi {
@@ -9,22 +11,58 @@ namespace QdspGui {
 
 // TimeFreqPlot
 // ----------------------------------------------------------------------------
-class TimeFreqPlot {
+class TimeFreqHistPlot {
 public:
-  std::vector<float> time;
-  std::vector<float> freq;
+  std::vector<float> x;
+  std::vector<float> y;
+  bool fitFlag{};
+
+  void fit() { fitFlag = true; }
 
   void show() {
     ImGui::PushID(this);
-    if (ImPlot::BeginPlot("##time")) {
-      ImPlot::PlotStairs("##", time.data(), time.size());
+    if (ImPlot::BeginPlot("Time domain")) {
+      if (fitFlag) {
+        ImPlot::SetupAxisLimits(ImAxis_X1, 0, x.size() - 1, ImPlotCond_Always);
+      }
+      ImPlot::PlotStairs("##", x.data(), x.size());
       ImPlot::EndPlot();
     }
-    if (ImPlot::BeginPlot("##hist")) {
-      ImPlot::PlotHistogram("##", time.data(), time.size());
+    if (ImPlot::BeginPlot("Histogram")) {
+      ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_AutoFit);
+      ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_AutoFit);
+      ImPlot::PlotHistogram("##", x.data(), x.size(), 100);
       ImPlot::EndPlot();
+    }
+    if (ImPlot::BeginPlot("Magnitude Spectrum")) {
+      ImPlot::PlotStems("##", y.data(), x.size() / 2);
+      ImPlot::EndPlot();
+    }
+    if (fitFlag) {
+      fitFlag = {};
     }
     ImGui::PopID();
+  }
+};
+
+class BufferSizeSpin {
+public:
+  std::string label{"Buffer Size"};
+  int value{10};
+
+  int bufferSize() const { return 1 << value; }
+
+  bool show() {
+    ImGui::PushID(this);
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted("2^");
+    ImGui::SameLine(0.f, 0.f);
+    ImGui::SetNextItemWidth(100.f);
+    const bool changed = ImGui::InputInt(label.c_str(), &value, 1, 0);
+    ImGui::SameLine(0.f, 0.f);
+    ImGui::Text("=%d", bufferSize());
+    ImGui::PopID();
+    return changed;
   }
 };
 
@@ -43,26 +81,30 @@ public:
 
 class WhiteNoiseDemo : public IShowable {
 public:
-  TimeFreqPlot plt;
+  TimeFreqHistPlot plt;
+  BufferSizeSpin bufSzSpin;
   Qdsp::WhiteNoiseGen gen;
-  int nsamples{1024};
 
   WhiteNoiseDemo() { generate(); }
 
   void generate() {
-    plt.time.resize(nsamples);
-    for (int i{}; i < nsamples; ++i) {
-      plt.time[i] = gen();
+    plt.x.resize(bufSzSpin.bufferSize());
+    for (int i{}; i < bufSzSpin.bufferSize(); ++i) {
+      plt.x[i] = gen();
     }
+    plt.y = plt.x;
+    plt.y.resize(2 * plt.y.size());
+    Qdsp::absfft<1024>(plt.y.data());
   }
 
   bool show() override final {
     ImGui::SeparatorText("White Noise Generator");
-    ImGui::InputInt("Samples", &nsamples);
-    ImGui::SameLine();
     if (ImGui::Button("Generate")) {
       generate();
+      plt.fit();
     }
+    ImGui::SameLine();
+    bufSzSpin.show();
     plt.show();
     return {};
   }
