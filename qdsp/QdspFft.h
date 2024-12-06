@@ -10,10 +10,10 @@
 #include <cmath>
 
 namespace Qdsp {
-namespace detail {
+namespace Fft {
 
-constexpr auto pi = 3.14159265358979323846;
-constexpr auto sin_cos_accuracy = 40;
+constexpr auto PI = 3.14159265358979323846;
+constexpr auto ACCURACY = 40;
 
 // The sine and cosine values calculated using series expansion
 // M - Current term in the series expansion
@@ -21,32 +21,33 @@ constexpr auto sin_cos_accuracy = 40;
 // B - Denominator for the angle in radians
 // A - Numerator for the angle in radians
 template <class T, unsigned M, unsigned N, unsigned B, unsigned A>
-constexpr T sin_cos_series() {
+constexpr T SinCosSeries() {
   if constexpr (M == N) {
     return 1.0;
   } else {
-    auto x = A * pi / B;
-    return 1.0 - x * x / M / (M + 1) * sin_cos_series<T, M + 2, N, B, A>();
+    auto x = A * PI / B;
+    return 1.0 - x * x / M / (M + 1) * SinCosSeries<T, M + 2, N, B, A>();
   }
 }
 
-template <class T, unsigned B, unsigned A> constexpr T sin() {
-  return (A * pi / B) * sin_cos_series<T, 2, sin_cos_accuracy, B, A>();
+template <class T, unsigned B, unsigned A> constexpr T Sin() {
+  return (A * PI / B) * SinCosSeries<T, 2, ACCURACY, B, A>();
 }
 
-template <class T, unsigned B, unsigned A> constexpr T cos() {
-  return sin_cos_series<T, 1, sin_cos_accuracy - 1, B, A>();
+template <class T, unsigned B, unsigned A> constexpr T Cos() {
+  return SinCosSeries<T, 1, ACCURACY - 1, B, A>();
 }
 
-template <class T, std::size_t N> struct danielson_lanczos {
-  danielson_lanczos<T, N / 2> next;
+template <class T, std::size_t N> class DanielsonLanczos {
+  DanielsonLanczos<T, N / 2> next;
 
-  void apply(T *data) {
-    next.apply(data);
-    next.apply(data + N);
+public:
+  void operator()(T *data) {
+    next(data);
+    next(data + N);
 
-    constexpr auto sina = -sin<T, N, 1>();
-    constexpr auto sinb = -sin<T, N, 2>();
+    constexpr auto sina = -Sin<T, N, 1>();
+    constexpr auto sinb = -Sin<T, N, 2>();
 
     T wtemp = sina;
     T wpr = -2.0 * wtemp * wtemp;
@@ -69,8 +70,9 @@ template <class T, std::size_t N> struct danielson_lanczos {
 };
 
 // The Danielson-Lanczos algorithm specialization for N=4.
-template <class T> struct danielson_lanczos<T, 4> {
-  void apply(T *data) {
+template <class T> class DanielsonLanczos<T, 4> {
+public:
+  void operator()(T *data) {
     T tr = data[2];
     T ti = data[3];
     data[2] = data[0] - tr;
@@ -100,8 +102,9 @@ template <class T> struct danielson_lanczos<T, 4> {
 };
 
 // The Danielson-Lanczos algorithm specialization for N=2.
-template <class T> struct danielson_lanczos<T, 2> {
-  void apply(T *data) {
+template <class T> class DanielsonLanczos<T, 2> {
+public:
+  void operator()(T *data) {
     T tr = data[2];
     T ti = data[3];
     data[2] = data[0] - tr;
@@ -112,11 +115,12 @@ template <class T> struct danielson_lanczos<T, 2> {
 };
 
 // The Danielson-Lanczos algorithm specialization for N=1.
-template <class T> struct danielson_lanczos<T, 1> {
-  void apply(T *data) {}
+template <class T> class DanielsonLanczos<T, 1> {
+public:
+  void operator()(T *data) {}
 };
 
-template <class T, std::size_t N> inline void scramble(T *data) {
+template <class T, std::size_t N> inline void Scramble(T *data) {
   int j = 1;
   for (int i = 1; i < 2 * N; i += 2) {
     if (j > i) {
@@ -131,15 +135,14 @@ template <class T, std::size_t N> inline void scramble(T *data) {
     j += m;
   }
 }
-} // namespace detail
 
-template <std::size_t N, class T> inline void fft(T *data) {
-  detail::danielson_lanczos<T, N> recursion;
-  detail::scramble<T, N>(data);
-  recursion.apply(data);
+template <std::size_t N, class T> inline void Fft(T *data) {
+  DanielsonLanczos<T, N> recursion;
+  Scramble<T, N>(data);
+  recursion(data);
 }
 
-template <std::size_t N, class T> inline void ifft(T *data) {
+template <std::size_t N, class T> inline void Ifft(T *data) {
   constexpr std::size_t _2n = N * 2;
   // Swap the real and imaginary parts of the i-th and (N-i)-th complex
   // numbers.
@@ -149,16 +152,16 @@ template <std::size_t N, class T> inline void ifft(T *data) {
     std::swap(data[2 * i + 1], data[(_2n + 1) - _2i]);
   }
   // Perform FFT in-situ
-  fft<N>(data);
+  Fft<N>(data);
   // Normalize the data by dividing each element by N.
   for (auto i = 0; i < 2 * N; ++i) {
     data[i] /= N;
   }
 }
 
-template <std::size_t N, class T> inline void absfft(T *data) {
+template <std::size_t N, class T> inline void AbsFft(T *data) {
   // Perform FFT in place
-  fft<N>(data);
+  Fft<N>(data);
 
   // Compute the magnitude of the DC component (frequency 0)
   data[0] = std::abs(data[0]);
@@ -172,4 +175,5 @@ template <std::size_t N, class T> inline void absfft(T *data) {
   // Compute the magnitude of the Nyquist frequency component
   data[N / 2] = std::abs(data[N / 2]);
 }
+} // namespace Fft
 } // namespace Qdsp

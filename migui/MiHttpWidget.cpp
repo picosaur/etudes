@@ -172,7 +172,7 @@ void HttpWidget::Impl::showResponse() {
   } else if (respDisplMode == 2) {
     meditor.DrawContents(resp.text.data(), resp.text.size());
   } else if (respDisplMode == 3 && resp.image) {
-    ImGui::Image(resp.image->textureId(), resp.image->size());
+    ImGui::Image(resp.image->textureId(), resp.image->imageSize());
   }
 }
 

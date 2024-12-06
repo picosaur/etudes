@@ -7,7 +7,7 @@ namespace Qdsp {
 // https://www.musicdsp.org/en/latest/Synthesis/216-fast-whitenoise-generator.html
 class WhiteNoiseGen {
 public:
-  constexpr static float scale = 2.0f / float(0xffffffff);
+  static constexpr float scale = 2.0f / float(0xffffffff);
   std::uint32_t x1 = 0x67452301;
   std::uint32_t x2 = 0xefcdab89;
   float s = 0.0f;

@@ -94,7 +94,7 @@ public:
     }
     plt.y = plt.x;
     plt.y.resize(2 * plt.y.size());
-    Qdsp::absfft<1024>(plt.y.data());
+    Qdsp::Fft::AbsFft<1024>(plt.y.data());
   }
 
   bool show() override final {
