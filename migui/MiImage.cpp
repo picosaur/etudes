@@ -1,8 +1,8 @@
 #include "MiImage.h"
 #include <MiGL.h>
 #include <algorithm>
-#include <execution>
 #include <stb_image.h>
+#include <stdexcept>
 
 namespace Mi {
 
@@ -122,8 +122,7 @@ std::vector<int> Image::findColor(ImU32 color) const {
 // Modifiers
 // ----------------------------------------------------------------------------
 void Image::fill(ImU32 color) {
-  std::for_each(std::execution::par, impl_->begin(), impl_->end(),
-                [&](auto &val) { val = color; });
+  std::for_each(impl_->begin(), impl_->end(), [&](auto &val) { val = color; });
 }
 
 void Image::fillRow(int row, ImU32 color, int col0, int col1) {

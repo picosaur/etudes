@@ -87,7 +87,10 @@ public:
   HttpResponse resp;
   int respDisplMode{};
 
+  ImGuiTexInspect::Context *texCtx{};
+
   Impl();
+  ~Impl();
   void updateData();
   void showRequest();
   void showResponse();
@@ -123,6 +126,12 @@ void HttpWidget::show() {
 HttpWidget::Impl::Impl() {
   teditor.SetReadOnly(true);
   setBrowserReqHeaders(url);
+}
+
+HttpWidget::Impl::~Impl() {
+  if (texCtx) {
+    ImGuiTexInspect::DestroyContext(texCtx);
+  }
 }
 
 void HttpWidget::Impl::updateData() {
@@ -173,7 +182,10 @@ void HttpWidget::Impl::showResponse() {
   } else if (respDisplMode == 2) {
     meditor.DrawContents(resp.text.data(), resp.text.size());
   } else if (respDisplMode == 3 && resp.image) {
-    // ImGui::Image(resp.image->textureId(), resp.image->imageSize());
+    if (!texCtx) {
+      texCtx = ImGuiTexInspect::CreateContext();
+    }
+    ImGuiTexInspect::SetCurrentContext(texCtx);
     ImGuiTexInspect::BeginInspectorPanel("##asd", resp.image->textureId(),
                                          resp.image->imageSize());
     ImGuiTexInspect::EndInspectorPanel();

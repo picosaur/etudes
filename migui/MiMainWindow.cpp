@@ -4,9 +4,15 @@
 #include "MiMapWidget.h"
 #include "MiQdspGui.h"
 #include "MiWaveWidget.h"
+#include "backends/tex_inspect_opengl.h"
+#include "imgui_tex_inspect.h"
 #include <SDL2/SDL_timer.h>
 #include <hello_imgui/hello_imgui.h>
 #include <implot.h>
+
+namespace HelloImGui {
+std::string GlslVersion();
+}
 
 namespace Mi {
 class MainWindow::Impl {
@@ -91,6 +97,27 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
   runnerParams.callbacks.ShowMenus = [&] { onShowMenus(); };
 
   runnerParams.callbacks.ShowStatus = [&] { onShowStatusbar(); };
+
+  // ImGuiTexInspect
+  {
+    auto fn_ImGuiTextInspect_Init = [&runnerParams]() {
+      if (runnerParams.rendererBackendType ==
+          HelloImGui::RendererBackendType::OpenGL3) {
+        ImGuiTexInspect::ImplOpenGL3_Init(HelloImGui::GlslVersion().c_str());
+        ImGuiTexInspect::Init();
+      }
+    };
+    runnerParams.callbacks.PostInit = HelloImGui::SequenceFunctions(
+        fn_ImGuiTextInspect_Init, runnerParams.callbacks.PostInit);
+  }
+  {
+    auto fn_ImGuiTextInspect_DeInit = []() {
+      ImGuiTexInspect::Shutdown();
+      ImGuiTexInspect::ImplOpenGl3_Shutdown();
+    };
+    runnerParams.callbacks.BeforeExit = HelloImGui::SequenceFunctions(
+        fn_ImGuiTextInspect_DeInit, runnerParams.callbacks.BeforeExit);
+  }
 
   ImPlot::CreateContext();
   HelloImGui::Run(runnerParams);

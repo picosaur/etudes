@@ -10,3 +10,6 @@
 [submodule "external/imgui_club/imgui_club"]
 	path = external/imgui_club/imgui_club
 	url = git@github.com:ocornut/imgui_club.git
+[submodule "external/imgui_tex_inspect/imgui_tex_inspect"]
+	path = external/imgui_tex_inspect/imgui_tex_inspect
+	url = git@github.com:pthom/imgui_tex_inspect.git
