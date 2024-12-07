@@ -25,5 +25,6 @@ public:
   void fill(ImU32 color);
   void fillRow(int row, ImU32 color, int col0 = -1, int col1 = -1);
   void fillCol(int col, ImU32 color, int row0 = -1, int row1 = -1);
+  void fillRect(ImU32 color);
 };
 } // namespace Mi

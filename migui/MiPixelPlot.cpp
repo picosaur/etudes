@@ -18,20 +18,18 @@ public:
 using WaveContext = Context<WaveData>;
 
 void PlotPixelWave(const char *label, double *ys, int count) {
-  auto ctx = WaveContext::Get()->pool.GetOrAddByKey(ImGui::GetID(label));
-
   const ImVec2 plotPos = ImPlot::GetPlotPos();
   const ImVec2 plotSize = ImPlot::GetPlotSize();
   const ImVec2 plotPosEnd = {plotPos.x + plotSize.x, plotPos.y + plotSize.y};
   const ImPlotRect plotLims = ImPlot::GetPlotLimits();
 
   if (ImPlot::BeginItem(label)) {
+    auto ctx = WaveContext::Get()->pool.GetOrAddByKey(ImGui::GetID(label));
     if (plotSize.x > 0 && plotSize.y > 0) {
       ctx->image = std::make_unique<Image>(plotSize.x / 4, plotSize.y / 4);
       ctx->image->fill(Color::Transparent);
-      // test
-      ctx->image->fillRow(10, Color::Vga::BrightBlue);
-      ctx->image->fillCol(2, Color::Vga::BrightRed, 0, 2);
+      // border
+      ctx->image->fillRect(Color::Vga::BrightRed);
       // wave
       DrawWaveOnImage(ctx->image.get(), ys, count, plotLims,
                       Color::Vga::BrightYellow);
