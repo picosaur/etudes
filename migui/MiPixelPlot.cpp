@@ -1,4 +1,5 @@
 #include "MiPixelPlot.h"
+#include "MiColor.h"
 #include "MiContext.h"
 #include "MiImage.h"
 #include <algorithm>
@@ -27,12 +28,13 @@ void PlotPixelWave(const char *label, double *ys, int count) {
   if (ImPlot::BeginItem(label)) {
     if (plotSize.x > 0 && plotSize.y > 0) {
       ctx->image = std::make_unique<Image>(plotSize.x / 4, plotSize.y / 4);
-      ctx->image->fill(IM_COL32_WHITE);
+      ctx->image->fill(Color::Transparent);
       // test
-      ctx->image->fillRow(10, IM_COL32_BLACK);
-      ctx->image->fillCol(2, IM_COL32_BLACK, 0, 2);
+      ctx->image->fillRow(10, Color::Vga::BrightBlue);
+      ctx->image->fillCol(2, Color::Vga::BrightRed, 0, 2);
       // wave
-      DrawWaveOnImage(ctx->image.get(), ys, count, plotLims);
+      DrawWaveOnImage(ctx->image.get(), ys, count, plotLims,
+                      Color::Vga::BrightYellow);
       // render
       ctx->image->render();
     }
@@ -46,7 +48,7 @@ void PlotPixelWave(const char *label, double *ys, int count) {
 }
 
 void DrawWaveOnImage(Image *image, double *ys, int count,
-                     const ImPlotRect &plotLims) {
+                     const ImPlotRect &plotLims, ImU32 color) {
   const double loVal = {std::numeric_limits<double>::lowest()};
   const double hiVal = {std::numeric_limits<double>::max()};
 
@@ -63,11 +65,11 @@ void DrawWaveOnImage(Image *image, double *ys, int count,
   for (int i{}; i < count; ++i) {
     if (xx >= dx) {
       if (j >= 0 && j < image->width()) {
-        int k0 = (lo - plotLims.Y.Min) / dy - 1;
-        int k1 = (hi - plotLims.Y.Min) / dy + 1;
+        int k0 = (lo - plotLims.Y.Min) / dy - 4;
+        int k1 = (hi - plotLims.Y.Min) / dy + 4;
         k0 = std::clamp(k0, 0, image->height() - 1);
         k1 = std::clamp(k1, 0, image->height() - 1);
-        image->fillCol(j, IM_COL32_BLACK, k0, k1);
+        image->fillCol(j, color, k0, k1);
       }
       lo = hiVal;
       hi = loVal;

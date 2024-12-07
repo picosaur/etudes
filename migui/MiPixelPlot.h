@@ -10,7 +10,7 @@ namespace PixelPlot {
 void PlotPixelWave(const char *label, double *ys, int count);
 
 void DrawWaveOnImage(Image *image, double *ys, int count,
-                     const ImPlotRect &plotLims);
+                     const ImPlotRect &plotLims, ImU32 color);
 
 } // namespace PixelPlot
 } // namespace Mi
