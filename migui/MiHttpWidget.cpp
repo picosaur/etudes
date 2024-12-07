@@ -7,6 +7,7 @@
 #include <imgui_internal.h>
 #include <imgui_memory_editor.h>
 #include <imgui_stdlib.h>
+#include <imgui_tex_inspect.h>
 
 namespace Mi {
 
@@ -172,7 +173,10 @@ void HttpWidget::Impl::showResponse() {
   } else if (respDisplMode == 2) {
     meditor.DrawContents(resp.text.data(), resp.text.size());
   } else if (respDisplMode == 3 && resp.image) {
-    ImGui::Image(resp.image->textureId(), resp.image->imageSize());
+    // ImGui::Image(resp.image->textureId(), resp.image->imageSize());
+    ImGuiTexInspect::BeginInspectorPanel("##asd", resp.image->textureId(),
+                                         resp.image->imageSize());
+    ImGuiTexInspect::EndInspectorPanel();
   }
 }
 

@@ -215,7 +215,7 @@ public:
 // ----------------------------------------------------------------------------
 class MapWidget::Impl {
 public:
-  TileMap tileMap1{TileMap::A_TILE_OPENSTREETMAP};
+  TileMap tileMap1{TileMap::ARC_IMAGERY};
   TileMap tileMap2{TileMap::TILES_OPENSEAMAP};
   MapPlot::MapGeometry geom;
 

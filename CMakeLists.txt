@@ -8,6 +8,7 @@ add_subdirectory(external/implot)
 add_subdirectory(external/cpp-httplib)
 add_subdirectory(external/imgui_club)
 add_subdirectory(external/ImGuiColorTextEdit)
+add_subdirectory(external/imgui_tex_inspect)
 
 add_subdirectory(emhttp)
 add_subdirectory(qdsp)

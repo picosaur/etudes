@@ -104,6 +104,21 @@ ImVec2 Image::imageSize() const {
   return {(float)impl_->width, (float)impl_->height};
 }
 
+// Analyze
+// ----------------------------------------------------------------------------
+std::vector<int> Image::findColor(ImU32 color) const {
+  ImU32 *data = impl_->data();
+  const auto size = impl_->size();
+  std::vector<int> indexes;
+  indexes.reserve(size);
+  for (int i{}; i < size; ++i) {
+    if (data[i] == color) {
+      indexes.push_back(i);
+    }
+  }
+  return indexes;
+}
+
 // Modifiers
 // ----------------------------------------------------------------------------
 void Image::fill(ImU32 color) {
@@ -145,6 +160,17 @@ void Image::fillRect(ImU32 color) {
   fillRow(height() - 1, color);
   fillCol(0, color);
   fillCol(width() - 1, color);
+}
+
+void Image::fillColor(const std::vector<int> &indexes, ImU32 color) {
+  ImU32 *data = impl_->data();
+  const auto size = impl_->size();
+  for (int i{}; i < indexes.size(); ++i) {
+    if (indexes[i] >= size) {
+      throw(std::out_of_range("Image::fillColor out of range"));
+    }
+    data[indexes[i]] = color;
+  }
 }
 
 } // namespace Mi

@@ -16,4 +16,5 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     emhttp
     aude
     qdsp
+    imtexinspect
     hello_imgui)
