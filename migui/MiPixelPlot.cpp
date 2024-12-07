@@ -2,10 +2,12 @@
 #include "MiColor.h"
 #include "MiContext.h"
 #include "MiImage.h"
+#include "MiPopup.h"
 #include <algorithm>
 #include <implot.h>
 #include <implot_internal.h>
 #include <limits>
+#include <vector>
 
 namespace Mi {
 namespace PixelPlot {
@@ -13,6 +15,7 @@ namespace PixelPlot {
 class WaveData {
 public:
   std::unique_ptr<Image> image;
+  std::vector<double> x, yhi, ylo;
 };
 
 using WaveContext = Context<WaveData>;
@@ -30,6 +33,7 @@ void PlotPixelWave(const char *label, double *ys, int count) {
       ctx->image->fill(Color::Transparent);
       // border
       ctx->image->fillRect(Color::Vga::BrightRed);
+      ctx->image->fillRow(10, Color::Vga::BrightRed, 10, 10);
       // wave
       DrawWaveOnImage(ctx->image.get(), ys, count, plotLims,
                       Color::Vga::BrightYellow);
@@ -42,6 +46,11 @@ void PlotPixelWave(const char *label, double *ys, int count) {
                          {1, 0});
     }
     ImPlot::EndItem();
+  }
+
+  if (Popup::BeginCentered("##")) {
+    ImGui::Text("Plot Lims X %.2f", plotLims.X.Size());
+    ImGui::End();
   }
 }
 
@@ -56,28 +65,31 @@ void DrawWaveOnImage(Image *image, double *ys, int count,
   double hi{loVal};
   double lo{hiVal};
 
-  double x{}; // starts from 0;
+  double step = 1.0;
+
   double xx{};
-  int j{int((0 - plotLims.X.Min) / dx)};
+  int j0{};
+  int row0{}, row1{};
+  int col0{}, col1{};
 
   for (int i{}; i < count; ++i) {
+    lo = std::min(lo, ys[i]);
+    hi = std::max(hi, ys[i]);
     if (xx >= dx) {
-      if (j >= 0 && j < image->width()) {
-        int k0 = (lo - plotLims.Y.Min) / dy - 4;
-        int k1 = (hi - plotLims.Y.Min) / dy + 4;
-        k0 = std::clamp(k0, 0, image->height() - 1);
-        k1 = std::clamp(k1, 0, image->height() - 1);
-        image->fillCol(j, color, k0, k1);
+      col0 = col1;
+      col1 = int((i * step - plotLims.X.Min) / dx);
+      row0 = (lo - plotLims.Y.Min) / dy - 2;
+      row1 = (hi - plotLims.Y.Min) / dy + 2;
+      row0 = std::clamp(row0, 0, image->height() - 1);
+      row1 = std::clamp(row1, 0, image->height() - 1);
+      if (col1 >= 0 && col1 < image->width()) {
+        image->fillCol(col1, color, row0, row1);
       }
       lo = hiVal;
       hi = loVal;
       xx = {};
-      j++;
     }
-    lo = std::min(lo, ys[i]);
-    hi = std::max(hi, ys[i]);
-    x += 1;
-    xx += 1;
+    xx += step;
   }
 }
 
