@@ -135,27 +135,4 @@ void Image::fillCol(int col, ImU32 color, int row0, int row1) {
   }
 }
 
-void Image::plot(double *ys, int count, const ImPlotPoint &xb,
-                 const ImPlotRect &plotLims) {
-  const double loVal = {std::numeric_limits<double>::lowest()};
-  const double hiVal = {std::numeric_limits<double>::max()};
-
-  const double binsPerPixel = plotLims.Size().x / imageSize().x;
-  const double valsPerPixel = plotLims.Size().y / imageSize().y;
-
-  int x = int(xb[0] / binsPerPixel);
-  double lo{hiVal};
-  double hi{loVal};
-  double s{};
-  for (int i{}; i < count; ++i) {
-    if (s >= binsPerPixel) {
-      lo = hiVal;
-      hi = loVal;
-      s = {};
-    }
-    lo = std::min(lo, ys[i]);
-    hi = std::max(hi, ys[i]);
-  }
-}
-
 } // namespace Mi

@@ -1,4 +1,5 @@
 #include "MiMapPlot.h"
+#include "MiContext.h"
 #include <imgui_internal.h>
 #include <implot.h>
 #include <implot_internal.h>
@@ -7,22 +8,6 @@
 
 namespace Mi {
 namespace MapPlot {
-// Context
-//-------------------------------------------------------------------------
-template <typename T> class Context {
-  Context() {}
-
-public:
-  Context(Context const &) = delete;
-  void operator=(Context const &) = delete;
-
-  static Context *Get() {
-    static Context instance;
-    return &instance;
-  }
-
-  ImPool<T> pool;
-};
 
 // MapData
 // ------------------------------------------------------------------------
