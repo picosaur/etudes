@@ -1,3 +1,4 @@
+#if defined(AUDE_USE_SDL)
 #include "AudeManager.h"
 #include <SDL_audio.h>
 
@@ -104,3 +105,5 @@ DeviceInfo Manager::Impl::defaultDevice(bool isCapture) {
 }
 
 } // namespace Aude
+
+#endif

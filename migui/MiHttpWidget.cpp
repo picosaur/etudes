@@ -186,7 +186,7 @@ void HttpWidget::Impl::showResponse() {
       texCtx = ImGuiTexInspect::CreateContext();
     }
     ImGuiTexInspect::SetCurrentContext(texCtx);
-    ImGuiTexInspect::BeginInspectorPanel("##asd", resp.image->textureId(),
+    ImGuiTexInspect::BeginInspectorPanel("##", resp.image->textureId(),
                                          resp.image->imageSize());
     ImGuiTexInspect::EndInspectorPanel();
   }

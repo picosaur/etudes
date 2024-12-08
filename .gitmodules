@@ -13,3 +13,6 @@
 [submodule "external/imgui_tex_inspect/imgui_tex_inspect"]
 	path = external/imgui_tex_inspect/imgui_tex_inspect
 	url = git@github.com:pthom/imgui_tex_inspect.git
+[submodule "external/miniaudio/miniaudio"]
+	path = external/miniaudio/miniaudio
+	url = git@github.com:mackron/miniaudio.git
