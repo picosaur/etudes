@@ -8,7 +8,7 @@ file(GLOB_RECURSE MIGUI_SRC *.cpp *.h)
 add_library(${PROJECT_NAME} ${MIGUI_SRC})
 target_include_directories (${PROJECT_NAME} PUBLIC .)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC 
+set(MIGUI_LIBS
     imgui
     implot
     imclub
@@ -17,4 +17,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     aude
     qdsp
     imtexinspect
-    hello_imgui)
+    hello_imgui
+)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC ${MIGUI_LIBS})
