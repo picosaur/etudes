@@ -1,4 +1,5 @@
-# imhello
+# Etudes
+Sandbox for my self
 
 ## Build Ubuntu
 ### Dependencies (install via apt)
