@@ -1,5 +1,5 @@
 # Etudes
-Sandbox for my self
+Sandbox for myself
 
 ## Build Ubuntu
 ### Dependencies (install via apt)
