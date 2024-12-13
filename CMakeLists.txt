@@ -11,16 +11,16 @@ add_subdirectory(external/ImGuiColorTextEdit)
 add_subdirectory(external/imgui_tex_inspect)
 add_subdirectory(external/miniaudio)
 
-add_subdirectory(emhttp)
-add_subdirectory(dsp)
-add_subdirectory(snd)
-add_subdirectory(migui)
+add_subdirectory(ethttp)
+add_subdirectory(etdsp)
+add_subdirectory(etsnd)
+add_subdirectory(etgui)
 
 set(HELLOIMGUI_USE_SDL2 ON CACHE BOOL "" FORCE)
 set(HELLOIMGUI_HAS_OPENGL3 ON CACHE BOOL "" FORCE)
 
-hello_imgui_add_app(${PROJECT_NAME} app/main.cpp)
+hello_imgui_add_app(${PROJECT_NAME} src/main.cpp)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC migui)
+target_link_libraries(${PROJECT_NAME} PUBLIC etgui)
 
 

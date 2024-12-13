@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.10.0)
+project(etsnd)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+file(GLOB_RECURSE ETSND_SRC *.cpp *.h)
+add_library(${PROJECT_NAME} ${ETSND_SRC})
+
+target_include_directories (${PROJECT_NAME} PUBLIC .)
+
+set(ETSND_BACKEND "MINI" CACHE INTERNAL "" FORCE)
+
+if(${SND_BACKEND} MATCHES "SDL")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ETSND_USE_SDL)
+    if(IOS)
+        target_link_libraries(${PROJECT_NAME} PUBLIC SDL2-static SDL2main)
+    elseif(EMSCRIPTEN)
+        target_compile_options(${PROJECT_NAME} PUBLIC -s USE_SDL=2)
+        target_link_options(${PROJECT_NAME} INTERFACE -s USE_SDL=2)
+    elseif(ANDROID)
+        target_link_libraries(${PROJECT_NAME} PUBLIC SDL2main SDL2)
+    elseif(TARGET SDL2-static)
+        target_link_libraries(${PROJECT_NAME} PUBLIC SDL2-static)
+    else()
+        find_package(SDL2 REQUIRED)
+        target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2 SDL2::SDL2main)
+    endif()
+elseif(${SND_BACKEND} MATCHES "MINI")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ETSND_USE_MINI)
+    target_link_libraries(${PROJECT_NAME} PUBLIC miniaudio)
+endif()
