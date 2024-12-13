@@ -1,10 +1,10 @@
-#if defined(AUDE_USE_MINI)
-#include "AudeManager.h"
+#if defined(SND_USE_MINI)
+#include "SndManager.h"
 #include <array>
 #include <miniaudio.h>
 #include <unordered_map>
 
-namespace Aude {
+namespace Snd {
 
 class Manager::Impl {
 public:
@@ -60,6 +60,6 @@ void Manager::Impl::initBackendsMap() {
   }
 }
 
-} // namespace Aude
+} // namespace Snd
 
 #endif

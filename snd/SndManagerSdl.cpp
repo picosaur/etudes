@@ -1,8 +1,8 @@
-#if defined(AUDE_USE_SDL)
-#include "AudeManager.h"
+#if defined(SND_USE_SDL)
+#include "SndManager.h"
 #include <SDL_audio.h>
 
-namespace Aude {
+namespace Snd {
 
 class Manager::Impl {
 public:
@@ -104,6 +104,6 @@ DeviceInfo Manager::Impl::defaultDevice(bool isCapture) {
   return info;
 }
 
-} // namespace Aude
+} // namespace Snd
 
 #endif

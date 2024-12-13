@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace Aude {
+namespace Snd {
 class DriverInfo;
 class DeviceInfo;
 class DeviceList;
@@ -24,10 +24,10 @@ public:
   ~DriverCombo();
 
   bool show();
-  void setList(const Aude::DriverList &list);
+  void setList(const Snd::DriverList &list);
   void setCurr(const std::string &name);
   bool hasCurr() const;
-  const Aude::DriverInfo &curr() const;
+  const Snd::DriverInfo &curr() const;
 };
 
 // DeviceCombo
@@ -41,10 +41,10 @@ public:
   ~DeviceCombo();
 
   bool show();
-  void setList(const Aude::DeviceList &list);
+  void setList(const Snd::DeviceList &list);
   void setCurr(const std::string &name);
   bool hasCurr() const;
-  const Aude::DeviceInfo &curr() const;
+  const Snd::DeviceInfo &curr() const;
 };
 
 // SampleRateCombo

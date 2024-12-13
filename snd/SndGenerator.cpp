@@ -1,6 +1,6 @@
-#include "AudeGenerator.h"
+#include "SndGenerator.h"
 
-namespace Aude {
+namespace Snd {
 
 class Generator::Impl {
 public:
@@ -16,4 +16,4 @@ void Generator::setSampleRate(int sampleRate) {}
 
 void Generator::setFrequency(int frequency) {}
 
-} // namespace Aude
+} // namespace Snd

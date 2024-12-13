@@ -1,5 +1,5 @@
 #include "MiAudeGui.h"
-#include "AudeManager.h"
+#include "SndManager.h"
 #include <imgui.h>
 
 namespace Mi {
@@ -145,10 +145,10 @@ public:
 
 // DriverCombo
 // ----------------------------------------------------------------------------
-class DriverCombo::Impl : public DriverDeviceComboImpl<Aude::DriverList> {
+class DriverCombo::Impl : public DriverDeviceComboImpl<Snd::DriverList> {
 public:
   Impl(const std::string &label)
-      : DriverDeviceComboImpl<Aude::DriverList>{label} {}
+      : DriverDeviceComboImpl<Snd::DriverList>{label} {}
 };
 
 DriverCombo::DriverCombo(const std::string &label)
@@ -158,7 +158,7 @@ DriverCombo::~DriverCombo() {}
 
 bool DriverCombo::show() { return impl_->show(); }
 
-void DriverCombo::setList(const Aude::DriverList &list) {
+void DriverCombo::setList(const Snd::DriverList &list) {
   impl_->setList(list);
 }
 
@@ -166,14 +166,14 @@ void DriverCombo::setCurr(const std::string &name) { impl_->setCurr(name); }
 
 bool DriverCombo::hasCurr() const { return impl_->hasCurr(); }
 
-const Aude::DriverInfo &DriverCombo::curr() const { return impl_->currItem(); }
+const Snd::DriverInfo &DriverCombo::curr() const { return impl_->currItem(); }
 
 // DeviceCombo
 // ----------------------------------------------------------------------------
-class DeviceCombo::Impl : public DriverDeviceComboImpl<Aude::DeviceList> {
+class DeviceCombo::Impl : public DriverDeviceComboImpl<Snd::DeviceList> {
 public:
   Impl(const std::string &label)
-      : DriverDeviceComboImpl<Aude::DeviceList>{label} {}
+      : DriverDeviceComboImpl<Snd::DeviceList>{label} {}
 };
 
 DeviceCombo::DeviceCombo(const std::string &label)
@@ -183,7 +183,7 @@ DeviceCombo::~DeviceCombo() {}
 
 bool DeviceCombo::show() { return impl_->show(); }
 
-void DeviceCombo::setList(const Aude::DeviceList &list) {
+void DeviceCombo::setList(const Snd::DeviceList &list) {
   impl_->setList(list);
 }
 
@@ -191,7 +191,7 @@ void DeviceCombo::setCurr(const std::string &name) { impl_->setCurr(name); }
 
 bool DeviceCombo::hasCurr() const { return impl_->hasCurr(); }
 
-const Aude::DeviceInfo &DeviceCombo::curr() const { return impl_->currItem(); }
+const Snd::DeviceInfo &DeviceCombo::curr() const { return impl_->currItem(); }
 
 // SampleRateCombo
 // ----------------------------------------------------------------------------
@@ -298,7 +298,7 @@ void DeviceChooserWidget::show() {
 }
 
 void DeviceChooserWidget::Impl::updateDriverCombo() {
-  auto &man = Aude::Manager::Get();
+  auto &man = Snd::Manager::Get();
   man.discoverDrivers();
   driverCombo.setList(man.drivers());
   driverCombo.setCurr(man.defaultDriver().name);

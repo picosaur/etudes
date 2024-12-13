@@ -14,8 +14,8 @@ set(MIGUI_LIBS
     imclub
     imtexteditor
     emhttp
-    aude
-    qdsp
+    snd
+    dsp
     imtexinspect
     hello_imgui
 )

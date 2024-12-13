@@ -13,7 +13,7 @@ add_subdirectory(external/miniaudio)
 
 add_subdirectory(emhttp)
 add_subdirectory(dsp)
-add_subdirectory(aude)
+add_subdirectory(snd)
 add_subdirectory(migui)
 
 set(HELLOIMGUI_USE_SDL2 ON CACHE BOOL "" FORCE)

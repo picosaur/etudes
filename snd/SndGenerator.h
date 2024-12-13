@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-namespace Aude {
+namespace Snd {
 
 class Generator {
   class Impl;
@@ -15,4 +15,4 @@ public:
   void setFrequency(int frequency);
 };
 
-} // namespace Aude
+} // namespace Snd
