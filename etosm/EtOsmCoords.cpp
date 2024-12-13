@@ -1,8 +1,7 @@
-#include "MiOsmCoords.h"
+#include "EtOsmCoords.h"
 #include <cmath>
 
-namespace Mi {
-namespace Osm {
+namespace EtOsm {
 static constexpr double R_EARTH{6371e3};
 static constexpr double PI{3.14159265358979323846};
 static constexpr double PI2{PI * 2.0};
@@ -117,5 +116,4 @@ void Cartesian(double &x, double &y, double lat, double lon, double lat0,
   x = dlon * cos(lat / 2.0 + lat0 / 2.0) * R_EARTH;
   y = (lat - lat0) * R_EARTH;
 }
-} // namespace Osm
-} // namespace Mi
+} // namespace EtOsm

@@ -15,9 +15,6 @@ set(ETGUI_LIBS
     imclub
     imtexteditor
     imtexinspect
-    ethttp
-    etsnd
-    etdsp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${ETGUI_LIBS})

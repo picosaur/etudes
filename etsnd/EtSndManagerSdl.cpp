@@ -1,5 +1,5 @@
-#if defined(SND_USE_SDL)
-#include "SndManager.h"
+#if defined(ETSND_USE_SDL)
+#include "EtSndManager.h"
 #include <SDL_audio.h>
 
 namespace EtSnd {

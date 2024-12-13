@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-namespace EtGui {
+namespace EtGuiw {
 
 class HttpWidget {
   class Impl;
@@ -13,4 +13,4 @@ public:
 
   void show();
 };
-} // namespace EtGui
+} // namespace EtGuiw

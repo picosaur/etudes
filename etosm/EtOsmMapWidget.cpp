@@ -1,11 +1,11 @@
-#include "EtMapWidget.h"
+#include "EtOsmMapWidget.h"
 #include "EtGuiImage.h"
 #include "EtHttp.h"
 #include "EtHttpFetcher.h"
-#include "EtMapPlot.h"
+#include "EtOsmMapPlot.h"
 #include <imgui_stdlib.h>
 
-namespace EtGui {
+namespace EtOsm {
 // KeyList
 // ----------------------------------------------------------------------------
 template <typename Tk, typename Tv> class KeyListItem {
@@ -62,7 +62,7 @@ public:
 class TileListItem {
 public:
   std::unique_ptr<EtHttp::HttpFetcher> fetcher;
-  std::unique_ptr<Image> image;
+  std::unique_ptr<EtGui::Image> image;
   bool used{};
 };
 
@@ -113,7 +113,7 @@ public:
         return it->value->image->textureId();
       }
       if (it->value->fetcher && it->value->fetcher->isDone()) {
-        it->value->image = std::make_unique<Image>(
+        it->value->image = std::make_unique<EtGui::Image>(
             it->value->fetcher->data(), it->value->fetcher->dataSize());
         it->value->fetcher = {};
         return it->value->image->textureId();
@@ -261,4 +261,4 @@ void MapWidget::show() {
     MapPlot::EndMapPlot();
   }
 }
-} // namespace EtGui
+} // namespace EtOsm

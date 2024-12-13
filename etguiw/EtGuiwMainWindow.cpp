@@ -1,9 +1,9 @@
-#include "EtGuiMainWindow.h"
+#include "EtGuiwMainWindow.h"
 #include "EtGuiDsp.h"
 #include "EtGuiHttpWidget.h"
 #include "EtGuiSnd.h"
 #include "EtGuiWaveWidget.h"
-#include "EtMapWidget.h"
+#include "EtOsmMapWidget.h"
 #include "backends/tex_inspect_opengl.h"
 #include "imgui_tex_inspect.h"
 #include <SDL2/SDL_timer.h>
@@ -14,14 +14,14 @@ namespace HelloImGui {
 std::string GlslVersion();
 }
 
-namespace EtGui {
+namespace EtGuiw {
 class MainWindow::Impl {
 public:
   HttpWidget httpWidget;
-  MapWidget mapWidget;
-  WaveWidget waveWidget;
-  DspGui::DemoWidget qdspWidget;
-  SndGui::DemoWidget audeWidget;
+  EtOsm::MapWidget mapWidget;
+  EtGui::WaveWidget waveWidget;
+  DspGui::DemoWidget dspWidget;
+  SndGui::DemoWidget sndWidget;
 
   int httpTicks{};
   int mapTicks{};
@@ -69,12 +69,12 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
          impl_->waveTicks = toc - tic;
        }},
 
-      {"Qdsp", "MainDockSpace", [&]() { impl_->qdspWidget.show(); }},
+      {"Dsp", "MainDockSpace", [&]() { impl_->dspWidget.show(); }},
 
-      {"AudEngi", "MainDockSpace",
+      {"Snd", "MainDockSpace",
        [&]() {
          auto tic = SDL_GetTicks();
-         impl_->audeWidget.show();
+         impl_->sndWidget.show();
          auto toc = SDL_GetTicks();
        }},
 
@@ -134,4 +134,4 @@ void MainWindow::onShowStatusbar() {
   ImGui::Text("HttpFetch: %d, GeoMap: %d, Waveform: %d", impl_->httpTicks,
               impl_->mapTicks, impl_->waveTicks);
 }
-} // namespace EtGui
+} // namespace EtGuiw

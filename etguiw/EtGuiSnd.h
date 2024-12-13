@@ -10,7 +10,7 @@ class DeviceList;
 class DriverList;
 } // namespace EtSnd
 
-namespace EtGui {
+namespace EtGuiw {
 namespace SndGui {
 
 // DriverCombo
@@ -134,4 +134,4 @@ public:
 };
 
 } // namespace SndGui
-} // namespace EtGui
+} // namespace EtGuiw

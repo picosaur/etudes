@@ -9,7 +9,7 @@
 #include <imgui_stdlib.h>
 #include <imgui_tex_inspect.h>
 
-namespace EtGui {
+namespace EtGuiw {
 
 class HttpHeadersList {
 public:
@@ -73,7 +73,7 @@ public:
   HttpHeadersList headers;
   std::string status;
   std::string text;
-  std::unique_ptr<Image> image;
+  std::unique_ptr<EtGui::Image> image;
 };
 
 class HttpWidget::Impl {
@@ -138,8 +138,8 @@ void HttpWidget::Impl::updateData() {
   resp.headers = fetcher->responseHeaders();
   resp.status = fetcher->statusText();
   fetcher->assignData(resp.text);
-  resp.image = std::make_unique<Image>((const std::byte *)resp.text.data(),
-                                       resp.text.size());
+  resp.image = std::make_unique<EtGui::Image>(
+      (const std::byte *)resp.text.data(), resp.text.size());
   teditor.SetText(resp.text);
 }
 
@@ -330,4 +330,4 @@ EtHttp::HttpHeaders HttpWidget::Impl::getReqHeaders() const {
   return emHeaders;
 }
 
-} // namespace EtGui
+} // namespace EtGuiw

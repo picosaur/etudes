@@ -14,13 +14,15 @@ add_subdirectory(external/miniaudio)
 add_subdirectory(ethttp)
 add_subdirectory(etdsp)
 add_subdirectory(etsnd)
+add_subdirectory(etosm)
 add_subdirectory(etgui)
+add_subdirectory(etguiw)
 
 set(HELLOIMGUI_USE_SDL2 ON CACHE BOOL "" FORCE)
 set(HELLOIMGUI_HAS_OPENGL3 ON CACHE BOOL "" FORCE)
 
 hello_imgui_add_app(${PROJECT_NAME} src/main.cpp)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC etgui)
+target_link_libraries(${PROJECT_NAME} PUBLIC etguiw)
 
 

@@ -1,6 +1,6 @@
-#include "EtGuiMainWindow.h"
+#include "EtGuiwMainWindow.h"
 
 int main(int, char *[]) {
-  EtGui::MainWindow mw;
+  EtGuiw::MainWindow mw;
   return 0;
 }

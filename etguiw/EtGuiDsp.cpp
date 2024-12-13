@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace EtGui {
+namespace EtGuiw {
 namespace DspGui {
 
 // TimeFreqPlot
@@ -190,4 +190,4 @@ void DemoWidget::Impl::setMenuShowable() {
 }
 
 } // namespace DspGui
-} // namespace EtGui
+} // namespace EtGuiw

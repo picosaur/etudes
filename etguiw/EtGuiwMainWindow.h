@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-namespace EtGui {
+namespace EtGuiw {
 class MainWindow {
   class Impl;
   std::unique_ptr<Impl> impl_;
@@ -15,4 +15,4 @@ private:
   void onShowToolbar();
   void onShowStatusbar();
 };
-} // namespace EtGui
+} // namespace EtGuiw

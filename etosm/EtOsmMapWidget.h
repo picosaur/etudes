@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-namespace EtGui {
+namespace EtOsm {
 class MapWidget {
   class Impl;
   std::unique_ptr<Impl> impl_;
@@ -12,4 +12,4 @@ public:
 
   void show();
 };
-} // namespace EtGui
+} // namespace EtOsm

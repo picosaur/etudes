@@ -2,7 +2,7 @@
 #include "EtSndManager.h"
 #include <imgui.h>
 
-namespace EtGui {
+namespace EtGuiw {
 namespace SndGui {
 
 // ============================================================================
@@ -380,4 +380,4 @@ void DemoWidget::show() {
 }
 
 } // namespace SndGui
-} // namespace EtGui
+} // namespace EtGuiw

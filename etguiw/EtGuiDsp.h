@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-namespace EtGui {
+namespace EtGuiw {
 namespace DspGui {
 
 // DemoWidget
@@ -17,4 +17,4 @@ public:
   void show();
 };
 } // namespace DspGui
-} // namespace EtGui
+} // namespace EtGuiw

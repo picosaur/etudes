@@ -1,4 +1,4 @@
-#include "EtMapPlot.h"
+#include "EtOsmMapPlot.h"
 #include "EtGuiContext.h"
 #include <imgui_internal.h>
 #include <implot.h>
@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace EtGui {
+namespace EtOsm {
 namespace MapPlot {
 
 // MapData
@@ -15,7 +15,7 @@ class MapData {
 public:
 };
 
-using MapContext = Context<MapData>;
+using MapContext = EtGui::Context<MapData>;
 
 // GridData
 // ------------------------------------------------------------------------
@@ -29,7 +29,7 @@ public:
   }
 };
 
-using GridContext = Context<GridData>;
+using GridContext = EtGui::Context<GridData>;
 
 // Plotters
 // ------------------------------------------------------------------------
@@ -129,4 +129,4 @@ MapGeometry GetMapGeometry(double tileSize) {
 }
 
 } // namespace MapPlot
-} // namespace EtGui
+} // namespace EtOsm

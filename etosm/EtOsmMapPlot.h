@@ -5,7 +5,7 @@
 #include <implot.h>
 #include <string>
 
-namespace EtGui {
+namespace EtOsm {
 namespace MapPlot {
 
 // Consts
@@ -114,4 +114,4 @@ std::string GetTileUrl(const TileIndex &index,
 ImPlotPoint GetCenterPoint(const ImPlotPoint &p1, const ImPlotPoint &p2);
 
 } // namespace MapPlot
-} // namespace EtGui
+} // namespace EtOsm
