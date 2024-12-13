@@ -12,7 +12,7 @@ add_subdirectory(external/imgui_tex_inspect)
 add_subdirectory(external/miniaudio)
 
 add_subdirectory(emhttp)
-add_subdirectory(qdsp)
+add_subdirectory(dsp)
 add_subdirectory(aude)
 add_subdirectory(migui)
 

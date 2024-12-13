@@ -1,6 +1,6 @@
 #include "MiQdspGui.h"
-#include "QdspFft.h"
-#include "QdspNoiseGen.h"
+#include "DspFft.h"
+#include "DspNoiseGen.h"
 #include <imgui.h>
 #include <implot.h>
 #include <string>
@@ -83,7 +83,7 @@ class WhiteNoiseDemo : public IShowable {
 public:
   TimeFreqHistPlot plt;
   BufferSizeSpin bufSzSpin;
-  Qdsp::WhiteNoiseGen gen;
+  Dsp::WhiteNoiseGen gen;
 
   WhiteNoiseDemo() { generate(); }
 
@@ -94,7 +94,7 @@ public:
     }
     plt.y = plt.x;
     plt.y.resize(2 * plt.y.size());
-    Qdsp::Fft::AbsFft<1024>(plt.y.data());
+    Dsp::Fft::AbsFft<1024>(plt.y.data());
   }
 
   bool show() override final {

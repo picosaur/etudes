@@ -1,7 +1,7 @@
 #pragma ocne
 #include <cstdint>
 
-namespace Qdsp {
+namespace Dsp {
 
 // WhiteNoiseGen
 // https://www.musicdsp.org/en/latest/Synthesis/216-fast-whitenoise-generator.html
