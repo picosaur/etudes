@@ -1,6 +1,7 @@
-#include "EtGuiwMainWindow.h"
+#include "MainWindow.h"
 
 int main(int, char *[]) {
-  EtGuiw::MainWindow mw;
+  MainWindow mw;
+  mw.show();
   return 0;
 }

@@ -1,4 +1,4 @@
-#include "EtGuiwMainWindow.h"
+#include "MainWindow.h"
 #include "EtGuiDsp.h"
 #include "EtGuiHttpWidget.h"
 #include "EtGuiSnd.h"
@@ -14,14 +14,14 @@ namespace HelloImGui {
 std::string GlslVersion();
 }
 
-namespace EtGuiw {
 class MainWindow::Impl {
 public:
-  HttpWidget httpWidget;
+  HelloImGui::RunnerParams params;
+  EtGuiw::HttpWidget httpWidget;
   EtOsm::MapWidget mapWidget;
   EtGui::WaveWidget waveWidget;
-  DspGui::DemoWidget dspWidget;
-  SndGui::DemoWidget sndWidget;
+  EtGuiw::DspGui::DemoWidget dspWidget;
+  EtGuiw::SndGui::DemoWidget sndWidget;
 
   int httpTicks{};
   int mapTicks{};
@@ -29,22 +29,25 @@ public:
 };
 
 MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
-  HelloImGui::RunnerParams runnerParams;
-  runnerParams.appWindowParams.windowTitle = "ImHello";
-  runnerParams.appWindowParams.restorePreviousGeometry = true;
-  runnerParams.appWindowParams.windowGeometry.windowSizeState =
-      HelloImGui::WindowSizeState::Maximized;
-  runnerParams.imGuiWindowParams.defaultImGuiWindowType =
-      HelloImGui::DefaultImGuiWindowType::ProvideFullScreenDockSpace;
-  runnerParams.imGuiWindowParams.showStatusBar = true;
-  runnerParams.imGuiWindowParams.showMenuBar = true;
+  impl_->params.appWindowParams.windowTitle = "Etudes";
 
-  runnerParams.dockingParams.dockingSplits = {
+  impl_->params.appWindowParams.restorePreviousGeometry = true;
+
+  impl_->params.appWindowParams.windowGeometry.windowSizeState =
+      HelloImGui::WindowSizeState::Maximized;
+
+  impl_->params.imGuiWindowParams.defaultImGuiWindowType =
+      HelloImGui::DefaultImGuiWindowType::ProvideFullScreenDockSpace;
+
+  impl_->params.imGuiWindowParams.showStatusBar = true;
+  impl_->params.imGuiWindowParams.showMenuBar = true;
+
+  impl_->params.dockingParams.dockingSplits = {
       {"MainDockSpace", "BotSpaceLeft", ImGuiDir_Down, 0.3},
       {"BotSpaceLeft", "BotSpaceRight", ImGuiDir_Right, 0.5},
   };
 
-  runnerParams.dockingParams.dockableWindows = {
+  impl_->params.dockingParams.dockableWindows = {
       {"HttpFetch", "MainDockSpace",
        [&]() {
          auto tic = SDL_GetTicks();
@@ -80,51 +83,53 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
 
   };
 
-  runnerParams.callbacks.ShowGui = [&]() {};
+  impl_->params.callbacks.ShowGui = [&]() {};
 
   HelloImGui::EdgeToolbarOptions toolbarOptions;
   toolbarOptions.sizeEm = 2.0f;
   toolbarOptions.WindowBg = {0.14f, 0.14f, 0.14f, 1.f};
 
-  runnerParams.callbacks.AddEdgeToolbar(
+  impl_->params.callbacks.AddEdgeToolbar(
       HelloImGui::EdgeToolbarType::Top, [&] { onShowToolbar(); },
       toolbarOptions);
 
-  runnerParams.callbacks.LoadAdditionalFonts = [&] {
+  impl_->params.callbacks.LoadAdditionalFonts = [&] {
     HelloImGui::ImGuiDefaultSettings::LoadDefaultFont_WithFontAwesomeIcons();
   };
 
-  runnerParams.callbacks.ShowMenus = [&] { onShowMenus(); };
+  impl_->params.callbacks.ShowMenus = [&] { onShowMenus(); };
 
-  runnerParams.callbacks.ShowStatus = [&] { onShowStatusbar(); };
+  impl_->params.callbacks.ShowStatus = [&] { onShowStatusbar(); };
 
   // ImGuiTexInspect
   {
-    auto fn_ImGuiTextInspect_Init = [&runnerParams]() {
-      if (runnerParams.rendererBackendType ==
+    auto fn_ImGuiTextInspect_Init = [impl = impl_.get()]() {
+      if (impl->params.rendererBackendType ==
           HelloImGui::RendererBackendType::OpenGL3) {
         ImGuiTexInspect::ImplOpenGL3_Init(HelloImGui::GlslVersion().c_str());
         ImGuiTexInspect::Init();
       }
     };
-    runnerParams.callbacks.PostInit = HelloImGui::SequenceFunctions(
-        fn_ImGuiTextInspect_Init, runnerParams.callbacks.PostInit);
+    impl_->params.callbacks.PostInit = HelloImGui::SequenceFunctions(
+        fn_ImGuiTextInspect_Init, impl_->params.callbacks.PostInit);
   }
   {
     auto fn_ImGuiTextInspect_DeInit = []() {
       ImGuiTexInspect::Shutdown();
       ImGuiTexInspect::ImplOpenGl3_Shutdown();
     };
-    runnerParams.callbacks.BeforeExit = HelloImGui::SequenceFunctions(
-        fn_ImGuiTextInspect_DeInit, runnerParams.callbacks.BeforeExit);
+    impl_->params.callbacks.BeforeExit = HelloImGui::SequenceFunctions(
+        fn_ImGuiTextInspect_DeInit, impl_->params.callbacks.BeforeExit);
   }
-
-  ImPlot::CreateContext();
-  HelloImGui::Run(runnerParams);
-  ImPlot::DestroyContext();
 }
 
 MainWindow::~MainWindow() {}
+
+void MainWindow::show() {
+  ImPlot::CreateContext();
+  HelloImGui::Run(impl_->params);
+  ImPlot::DestroyContext();
+}
 
 void MainWindow::onShowMenus() {}
 
@@ -134,4 +139,3 @@ void MainWindow::onShowStatusbar() {
   ImGui::Text("HttpFetch: %d, GeoMap: %d, Waveform: %d", impl_->httpTicks,
               impl_->mapTicks, impl_->waveTicks);
 }
-} // namespace EtGuiw

@@ -21,7 +21,8 @@ add_subdirectory(etosm)
 add_subdirectory(etgui)
 add_subdirectory(etguiw)
 
-hello_imgui_add_app(${PROJECT_NAME} src/main.cpp)
+file(GLOB_RECURSE ETUDES_SRC src/*.cpp src/*.h)
+hello_imgui_add_app(${PROJECT_NAME} ${ETUDES_SRC})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC etguiw)
 

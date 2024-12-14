@@ -2,6 +2,7 @@
 .vscode/*
 *.user
 build/*
+build_android/*
 
 # Prerequisites
 *.d

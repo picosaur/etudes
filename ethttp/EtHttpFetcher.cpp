@@ -103,7 +103,7 @@ public:
     future = std::async(std::launch::async, [this]() {
       cli = std::make_unique<httplib::Client>(UrlRoot(url));
       cli->set_connection_timeout(1, 0);
-      cli->enable_server_certificate_verification(false);
+      //cli->enable_server_certificate_verification(false);
       cli->Get(
           url, headers,
           [&](const httplib::Response &response_) {
