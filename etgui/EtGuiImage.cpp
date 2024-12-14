@@ -127,7 +127,7 @@ void Image::fill(ImU32 color) {
 
 void Image::fillRow(int row, ImU32 color, int col0, int col1) {
   if (row >= height() || col0 >= width() || col1 >= width()) {
-    throw(std::out_of_range("Mi::Image::fillRow out of range"));
+    throw(std::out_of_range("EtGui::Image::fillRow out of range"));
   }
   col0 = col0 < 0 ? 0 : col0;
   col1 = col1 < 0 ? impl_->width : col1;
@@ -142,7 +142,7 @@ void Image::fillRow(int row, ImU32 color, int col0, int col1) {
 
 void Image::fillCol(int col, ImU32 color, int row0, int row1) {
   if (col >= width() || row0 >= height() || row1 >= height()) {
-    throw(std::out_of_range("Mi::Image::fillRow out of range"));
+    throw(std::out_of_range("EtGui::Image::fillRow out of range"));
   }
   row0 = row0 < 0 ? 0 : row0;
   row1 = row1 < 0 ? impl_->height : row1;
@@ -166,7 +166,7 @@ void Image::fillColor(const std::vector<int> &indexes, ImU32 color) {
   const auto size = impl_->size();
   for (int i{}; i < indexes.size(); ++i) {
     if (indexes[i] >= size) {
-      throw(std::out_of_range("Image::fillColor out of range"));
+      throw(std::out_of_range("EtGui::Image::fillColor out of range"));
     }
     data[indexes[i]] = color;
   }

@@ -3,6 +3,9 @@ project(etudes VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(HELLOIMGUI_USE_SDL2 ON CACHE BOOL "" FORCE)
+set(HELLOIMGUI_HAS_OPENGL3 ON CACHE BOOL "" FORCE)
+
 add_subdirectory(external/hello_imgui)
 add_subdirectory(external/implot)
 add_subdirectory(external/cpp-httplib)
@@ -17,9 +20,6 @@ add_subdirectory(etsnd)
 add_subdirectory(etosm)
 add_subdirectory(etgui)
 add_subdirectory(etguiw)
-
-set(HELLOIMGUI_USE_SDL2 ON CACHE BOOL "" FORCE)
-set(HELLOIMGUI_HAS_OPENGL3 ON CACHE BOOL "" FORCE)
 
 hello_imgui_add_app(${PROJECT_NAME} src/main.cpp)
 
