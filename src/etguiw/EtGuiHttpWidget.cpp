@@ -2,7 +2,7 @@
 #include "EtGuiImage.h"
 #include "EtHttp.h"
 #include "EtHttpFetcher.h"
-#include <TextEditor.h>
+#include <ImGuiColorTextEdit/TextEditor.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui_memory_editor.h>

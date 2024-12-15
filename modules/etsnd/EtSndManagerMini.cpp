@@ -1,4 +1,4 @@
-#if defined(ETSND_USE_MINI)
+#if defined(ETSND_USE_MINIAUDIO)
 #include "EtSndManager.h"
 #include <array>
 #include <miniaudio.h>

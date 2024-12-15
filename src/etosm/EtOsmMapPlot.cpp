@@ -5,6 +5,7 @@
 #include <implot_internal.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace EtOsm {
 namespace MapPlot {

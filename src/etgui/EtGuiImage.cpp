@@ -1,5 +1,5 @@
 #include "EtGuiImage.h"
-#include <EtGuiGl.h>
+#include "EtGuiGl.h"
 #include <algorithm>
 #include <stb_image.h>
 #include <stdexcept>

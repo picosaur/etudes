@@ -1,12 +1,12 @@
 #include "MainWindow.h"
-#include "EtGuiDsp.h"
-#include "EtGuiHttpWidget.h"
-#include "EtGuiSnd.h"
-#include "EtGuiWaveWidget.h"
-#include "EtOsmMapWidget.h"
 #include "backends/tex_inspect_opengl.h"
+#include "etgui/EtGuiWaveWidget.h"
+#include "etguiw/EtGuiDsp.h"
+#include "etguiw/EtGuiHttpWidget.h"
+#include "etguiw/EtGuiSnd.h"
+#include "etosm/EtOsmMapWidget.h"
 #include "imgui_tex_inspect.h"
-#include <SDL2/SDL_timer.h>
+// #include <SDL2/SDL_timer.h>
 #include <hello_imgui/hello_imgui.h>
 #include <implot.h>
 
@@ -50,35 +50,35 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
   impl_->params.dockingParams.dockableWindows = {
       {"HttpFetch", "MainDockSpace",
        [&]() {
-         auto tic = SDL_GetTicks();
+         // auto tic = SDL_GetTicks();
          impl_->httpWidget.show();
-         auto toc = SDL_GetTicks();
-         impl_->httpTicks = toc - tic;
+         // auto toc = SDL_GetTicks();
+         // impl_->httpTicks = toc - tic;
        }},
 
       {"GeoMap", "MainDockSpace",
        [&]() {
-         auto tic = SDL_GetTicks();
+         // auto tic = SDL_GetTicks();
          impl_->mapWidget.show();
-         auto toc = SDL_GetTicks();
-         impl_->mapTicks = toc - tic;
+         // auto toc = SDL_GetTicks();
+         // impl_->mapTicks = toc - tic;
        }},
 
       {"Waveform", "MainDockSpace",
        [&]() {
-         auto tic = SDL_GetTicks();
+         // auto tic = SDL_GetTicks();
          impl_->waveWidget.show();
-         auto toc = SDL_GetTicks();
-         impl_->waveTicks = toc - tic;
+         // auto toc = SDL_GetTicks();
+         // impl_->waveTicks = toc - tic;
        }},
 
       {"Dsp", "MainDockSpace", [&]() { impl_->dspWidget.show(); }},
 
       {"Snd", "MainDockSpace",
        [&]() {
-         auto tic = SDL_GetTicks();
+         // auto tic = SDL_GetTicks();
          impl_->sndWidget.show();
-         auto toc = SDL_GetTicks();
+         // auto toc = SDL_GetTicks();
        }},
 
   };

@@ -2,20 +2,20 @@
 	path = external/hello_imgui
 	url = git@github.com:pthom/hello_imgui.git
 [submodule "external/implot"]
-	path = external/implot/implot
+	path = external/implot
 	url = git@github.com:epezent/implot.git
 [submodule "external/cpp-httplib/cpp-httplib"]
 	path = external/cpp-httplib/cpp-httplib
 	url = git@github.com:yhirose/cpp-httplib.git
 [submodule "external/imgui_club/imgui_club"]
-	path = external/imgui_club/imgui_club
+	path = external/imgui_club
 	url = git@github.com:ocornut/imgui_club.git
 [submodule "external/imgui_tex_inspect/imgui_tex_inspect"]
-	path = external/imgui_tex_inspect/imgui_tex_inspect
+	path = external/imgui_tex_inspect
 	url = git@github.com:pthom/imgui_tex_inspect.git
 [submodule "external/miniaudio/miniaudio"]
 	path = external/miniaudio/miniaudio
 	url = git@github.com:mackron/miniaudio.git
 [submodule "external/ImGuiColorTextEdit/ImGuiColorTextEdit"]
-	path = external/ImGuiColorTextEdit/ImGuiColorTextEdit
+	path = external/ImGuiColorTextEdit
 	url = git@github.com:BalazsJako/ImGuiColorTextEdit.git

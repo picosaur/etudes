@@ -1,29 +1,46 @@
-cmake_minimum_required(VERSION 3.13)  
+cmake_minimum_required(VERSION 3.11)
 project(etudes VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(HELLOIMGUI_USE_SDL2 ON CACHE BOOL "" FORCE)
-set(HELLOIMGUI_HAS_OPENGL3 ON CACHE BOOL "" FORCE)
+# configure
+# -----------------------------------------------------------------------------
+set(ETUDES_SRC_TEST OFF CACHE INTERNAL "" FORCE)
+set(ETSND_BACKEND "MINIAUDIO" CACHE INTERNAL "" FORCE)
+set(ETHTTP_BACKEND "CPPHTTPLIB" CACHE INTERNAL "" FORCE)
 
+# externals
+# -----------------------------------------------------------------------------
+set(HELLOIMGUI_USE_SDL2 ON CACHE INTERNAL "" FORCE)
+set(HELLOIMGUI_HAS_OPENGL3 ON CACHE INTERNAL "" FORCE)
+
+include(external/imguiextras.cmake)
 add_subdirectory(external/hello_imgui)
-add_subdirectory(external/implot)
-add_subdirectory(external/cpp-httplib)
-add_subdirectory(external/imgui_club)
-add_subdirectory(external/ImGuiColorTextEdit)
-add_subdirectory(external/imgui_tex_inspect)
-add_subdirectory(external/miniaudio)
 
-add_subdirectory(ethttp)
-add_subdirectory(etdsp)
-add_subdirectory(etsnd)
-add_subdirectory(etosm)
-add_subdirectory(etgui)
-add_subdirectory(etguiw)
+if(ETSND_BACKEND MATCHES "MINIAUDIO")
+    add_subdirectory(external/miniaudio)
+endif()
 
-file(GLOB_RECURSE ETUDES_SRC src/*.cpp src/*.h)
-hello_imgui_add_app(${PROJECT_NAME} ${ETUDES_SRC})
+if(ETHTTP_BACKEND MATCHES "CPPHTTPLIB")
+    add_subdirectory(external/cpp-httplib)
+endif()
 
-target_link_libraries(${PROJECT_NAME} PUBLIC etguiw)
+# internals
+# -----------------------------------------------------------------------------
+include(modules/modules.cmake)
+
+# application
+# -----------------------------------------------------------------------------
+if(ETUDES_SRC_TEST)
+    file(GLOB_RECURSE ETUDES_SRC src_test/*.cpp src_test/*.h)
+    hello_imgui_add_app(${PROJECT_NAME} ${ETUDES_SRC} ${IMGUIEXTRAS_SRC})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${ETMODULES})
+else()
+    file(GLOB_RECURSE ETUDES_SRC src/*.cpp src/*.h)
+    hello_imgui_add_app(${PROJECT_NAME} ${ETUDES_SRC} ${IMGUIEXTRAS_SRC})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${ETMODULES})
+    target_include_directories(${PROJECT_NAME} PUBLIC src/etgui)
+endif()
+
 
 
