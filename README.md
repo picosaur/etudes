@@ -1,7 +1,7 @@
 # Etudes
 Sandbox for myself
 
-## Build Ubuntu
+## Ubuntu
 ### Dependencies (install via apt)
 ```
 libglfw3-dev
@@ -14,3 +14,11 @@ emcmake cmake ../imhello/
 emmake make
 emrun *.html
 ```
+### ArrayFire
+- Problem: devices are available only with sudo
+  - Solution: add user to the following groups: `render`, `video` 
+```
+sudo usermod -a -G video $LOGNAME
+sudo usermod -a -G render $LOGNAME
+```
+
