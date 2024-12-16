@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # configure
 # -----------------------------------------------------------------------------
 set(ETUDES_SRC_TEST OFF CACHE INTERNAL "" FORCE)
-set(ETSND_BACKEND "MINIAUDIO" CACHE INTERNAL "" FORCE)
-set(ETHTTP_BACKEND "CPPHTTPLIB" CACHE INTERNAL "" FORCE)
+set(ETSND_BACKEND "" CACHE INTERNAL "" FORCE)
+set(ETHTTP_BACKEND "" CACHE INTERNAL "" FORCE)
 
 # externals
 # -----------------------------------------------------------------------------
@@ -27,7 +27,17 @@ endif()
 
 # internals
 # -----------------------------------------------------------------------------
-include(modules/modules.cmake)
+add_subdirectory(modules/ethttp)
+add_subdirectory(modules/etdsp)
+add_subdirectory(modules/etsnd)
+add_subdirectory(modules/etfire)
+
+set(ETMODULES
+    etdsp
+    etsnd
+    ethttp
+    etfire
+)
 
 # application
 # -----------------------------------------------------------------------------

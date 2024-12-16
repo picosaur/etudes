@@ -13,7 +13,9 @@ include_directories(${IMGUICLUB_DIR}/imgui_memory_editor)
 
 # ImGuiColorTextEdit
 set(IMTEXTEDITOR_DIR ${CMAKE_CURRENT_LIST_DIR}/ImGuiColorTextEdit)
-set(IMTEXTEDITOR_SRC ${IMTEXTEDITOR_DIR}/TextEditor.cpp)
+set(IMTEXTEDITOR_SRC 
+    ${IMTEXTEDITOR_DIR}/TextEditor.cpp
+    ${IMTEXTEDITOR_DIR}/LanguageDefinitions.cpp)
 
 # imgui_tex_inspect
 set(IMTEXINSPECT_DIR ${CMAKE_CURRENT_LIST_DIR}/imgui_tex_inspect)

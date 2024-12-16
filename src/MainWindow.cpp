@@ -2,6 +2,7 @@
 #include "backends/tex_inspect_opengl.h"
 #include "etgui/EtGuiWaveWidget.h"
 #include "etguiw/EtGuiDsp.h"
+#include "etguiw/EtGuiFire.h"
 #include "etguiw/EtGuiHttpWidget.h"
 #include "etguiw/EtGuiSnd.h"
 #include "etosm/EtOsmMapWidget.h"
@@ -22,6 +23,7 @@ public:
   EtGui::WaveWidget waveWidget;
   EtGuiw::DspGui::DemoWidget dspWidget;
   EtGuiw::SndGui::DemoWidget sndWidget;
+  EtGuiw::FireGui::DemoWidget fireDemo;
 
   int httpTicks{};
   int mapTicks{};
@@ -56,7 +58,7 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
          // impl_->httpTicks = toc - tic;
        }},
 
-      {"GeoMap", "MainDockSpace",
+      {"Osm", "MainDockSpace",
        [&]() {
          // auto tic = SDL_GetTicks();
          impl_->mapWidget.show();
@@ -81,7 +83,11 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
          // auto toc = SDL_GetTicks();
        }},
 
-  };
+      {"Fire", "MainDockSpace", [&]() {
+         // auto tic = SDL_GetTicks();
+         impl_->fireDemo.show();
+         // auto toc = SDL_GetTicks();
+       }}};
 
   impl_->params.callbacks.ShowGui = [&]() {};
 

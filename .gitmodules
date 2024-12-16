@@ -16,6 +16,6 @@
 [submodule "external/miniaudio/miniaudio"]
 	path = external/miniaudio/miniaudio
 	url = git@github.com:mackron/miniaudio.git
-[submodule "external/ImGuiColorTextEdit/ImGuiColorTextEdit"]
+[submodule "external/ImGuiColorTextEdit"]
 	path = external/ImGuiColorTextEdit
-	url = git@github.com:BalazsJako/ImGuiColorTextEdit.git
+	url = git@github.com:pthom/ImGuiColorTextEdit.git
