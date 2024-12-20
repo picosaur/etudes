@@ -19,13 +19,6 @@ DemoWidget::DemoWidget() : impl_{std::make_unique<Impl>()} {
 DemoWidget::~DemoWidget() {}
 
 void DemoWidget::show() {
-  if (ImGui::BeginListBox("Backends")) {
-    for (const auto &item : impl_->backends) {
-      ImGui::Selectable(item.name.c_str());
-    }
-    ImGui::EndListBox();
-  }
-
   if (ImGui::BeginTable("Devices", 5)) {
     ImGui::TableSetupColumn("Backend");
     ImGui::TableSetupColumn("Name");
