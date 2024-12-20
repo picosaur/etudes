@@ -20,7 +20,6 @@ clinfo
 python3-dev
 libpython3-dev
 ocl-icd-libopencl1
-ocl-icd-libopencl1
 ocl-icd-dev
 ocl-icd-opencl-dev
 zlib1g
