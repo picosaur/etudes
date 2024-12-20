@@ -29,6 +29,9 @@ libxml2-dev
 libhwloc-dev
 dialog
 ```
+- pocl
+  - https://github.com/pocl/pocl
+  - https://portablecl.org/docs/html/install.html#installing-requirements-for-ubuntu
 
 ## Dependencies (install via apt)
 ```
