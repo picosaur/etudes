@@ -236,14 +236,14 @@ void SetOperatorFunc(const OpFunc &func, const char *op,
 
 // Test
 // ----------------------------------------------------------------------------
-class CusomData {};
+class CustomData {};
 
 void Test() {
-  SetOperatorFunc(
+  SetOperatorFunc<double, double>(
       [](const Args &args) {
         return Data{*args.at(0)->ptr<double>() + *args.at(1)->ptr<double>()};
       },
-      "+", {&typeid(double), &typeid(double)});
+      "+");
 
   double aaa;
   Data asd(aaa);

@@ -106,6 +106,11 @@ typedef Data (*OpFunc)(const Args &args);
 void SetContext(const char *ctx);
 void SetOperatorFunc(OpFunc &func, const char *op, const TypeList &types);
 
+template <typename... T>
+void SetOperatorFunc(const OpFunc &func, const char *op) {
+  SetOperatorFunc(func, op, {&typeid(T)...});
+}
+
 // Test
 // ----------------------------------------------------------------------------
 void Test();
