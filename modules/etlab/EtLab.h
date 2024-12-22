@@ -77,7 +77,9 @@ public:
   Var(const Var &arg);
   void operator=(const Var &arg);
 
-  template <typename T> Var(T &&other) {
+  template <typename T, typename CleanT = std::decay_t<T>,
+            std::enable_if_t<!std::is_same_v<CleanT, Var>, bool> = true>
+  Var(T &&other) {
     initData(Data{std::forward<T>(other)});
   }
 

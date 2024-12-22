@@ -229,8 +229,9 @@ void SetContext(const char *ctx) {
 }
 
 void SetOperatorFunc(const OpFunc &func, const char *op,
-                     const TypeList &typeList) {
+                     const TypeList &types) {
   auto *ctx = EngineContext::GetContext();
+  ctx->setOpFunc(func, op, types);
 }
 
 // Test
@@ -238,13 +239,13 @@ void SetOperatorFunc(const OpFunc &func, const char *op,
 class CusomData {};
 
 void Test() {
-  /*
+
   SetOperatorFunc(
       [](const Args &args) {
         return Data{*args.at(0)->ptr<double>() + *args.at(1)->ptr<double>()};
       },
       "+", {&typeid(double), &typeid(double)});
-*/
+
   double aaa;
   Data asd(aaa);
 
