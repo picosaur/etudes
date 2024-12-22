@@ -213,7 +213,7 @@ void Var::initData(Data &&data) {
 
 Var Var::varOperator(const char *op, const Var &a) {
   auto ctx = EngineContext::GetContext();
-  auto func = ctx->getOpFunc("+", {data_->typeInfo(), a.data_->typeInfo()});
+  auto func = ctx->getOpFunc(op, {data_->typeInfo(), a.data_->typeInfo()});
   return func({data_, a.data_});
 }
 
@@ -239,7 +239,6 @@ void SetOperatorFunc(const OpFunc &func, const char *op,
 class CusomData {};
 
 void Test() {
-
   SetOperatorFunc(
       [](const Args &args) {
         return Data{*args.at(0)->ptr<double>() + *args.at(1)->ptr<double>()};
@@ -249,11 +248,10 @@ void Test() {
   double aaa;
   Data asd(aaa);
 
-  Var a = 10;
+  Var a = 10.0;
   Var b = a;
-  Var c = a + 10 + b;
-  Var d = CusomData();
-  std::cout << c << std::endl;
+  Var c = a + b;
+  std::cout << c.value<double>() << std::endl;
 }
 
 } // namespace EtLab

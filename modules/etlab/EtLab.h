@@ -83,6 +83,13 @@ public:
     initData(Data{std::forward<T>(other)});
   }
 
+  template <typename T> const T &value() {
+    if (&typeid(T) == data_->typeInfo()) {
+      return (*data_->ptr<T>());
+    }
+    throw(std::runtime_error("Var::value unexpected conversion"));
+  }
+
   template <typename T> Var operator+(const T &a) {
     return varOperator("+", a);
   }
