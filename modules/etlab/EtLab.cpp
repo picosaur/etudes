@@ -154,14 +154,14 @@ public:
 // Engine
 // ----------------------------------------------------------------------------
 class Engine {
-  OwningMaker<Data> vars_;
+  OwningMaker<Data> datas_;
   FunctionList<OpFunc> ops_;
 
 public:
-  Data *makeVar() { return vars_.make(); }
-  Data *makeVar(Data &&data) { return vars_.make(std::move(data)); }
-  void acquireVar(Data *data) { vars_.acquire(data); }
-  void releaseVar(Data *data) { vars_.release(data); }
+  Data *makeData() { return datas_.make(); }
+  Data *makeData(Data &&data) { return datas_.make(std::move(data)); }
+  void acquireData(Data *data) { datas_.acquire(data); }
+  void releaseData(Data *data) { datas_.release(data); }
 
   void setOpFunc(OpFunc func, const char *op, const TypeList &types) {
     ops_.insert(hash_combine_list(hash_combine(0, op), types), func);
@@ -186,29 +186,29 @@ Var::Var() { initEmptyData(); }
 
 Var::~Var() {
   auto ctx = EngineContext::GetContext();
-  ctx->releaseVar(data_);
+  ctx->releaseData(data_);
 }
 
 Var::Var(const Var &arg) {
   auto ctx = EngineContext::GetContext();
-  ctx->acquireVar(arg.data_);
+  ctx->acquireData(arg.data_);
   data_ = arg.data_;
 }
 
 void Var::operator=(const Var &arg) {
   auto ctx = EngineContext::GetContext();
-  ctx->acquireVar(arg.data_);
+  ctx->acquireData(arg.data_);
   data_ = arg.data_;
 }
 
 void Var::initEmptyData() {
   auto ctx = EngineContext::GetContext();
-  data_ = ctx->makeVar();
+  data_ = ctx->makeData();
 }
 
 void Var::initData(Data &&data) {
   auto ctx = EngineContext::GetContext();
-  data_ = ctx->makeVar(std::forward<Data>(data));
+  data_ = ctx->makeData(std::forward<Data>(data));
 }
 
 Var Var::varOperator(const char *op, const Var &a) {
