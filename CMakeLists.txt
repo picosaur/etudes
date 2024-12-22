@@ -31,12 +31,14 @@ add_subdirectory(modules/ethttp)
 add_subdirectory(modules/etdsp)
 add_subdirectory(modules/etsnd)
 add_subdirectory(modules/etfire)
+add_subdirectory(modules/etlab)
 
 set(ETMODULES
     etdsp
     etsnd
     ethttp
     etfire
+    etlab
 )
 
 # application
