@@ -155,6 +155,7 @@ public:
 // ----------------------------------------------------------------------------
 class Engine {
   OwningMaker<Data> datas_;
+  FunctionList<InitFunc> inits_;
   FunctionList<OpFunc> ops_;
 
 public:
@@ -162,6 +163,20 @@ public:
   Data *makeData(Data &&data) { return datas_.make(std::move(data)); }
   void acquireData(Data *data) { datas_.acquire(data); }
   void releaseData(Data *data) { datas_.release(data); }
+
+  void setInitFunc(InitFunc func, TypeInfo type) {
+    inits_.insert(hash_combine(0, type), func);
+  }
+
+  InitFunc getInitFunc(TypeInfo type) {
+    auto it = inits_.find(hash_combine(0, type));
+    if (inits_.isFound(it)) {
+      return (it->second);
+    }
+    return BypassInit;
+  }
+
+  static Data BypassInit(Data &&data) { return std::forward<Data>(data); }
 
   void setOpFunc(OpFunc func, const char *op, const TypeList &types) {
     ops_.insert(hash_combine_list(hash_combine(0, op), types), func);
@@ -208,7 +223,8 @@ void Var::initEmptyData() {
 
 void Var::initData(Data &&data) {
   auto ctx = EngineContext::GetContext();
-  data_ = ctx->makeData(std::forward<Data>(data));
+  auto initFunc = ctx->getInitFunc(data.typeInfo());
+  data_ = ctx->makeData(initFunc(std::forward<Data>(data)));
 }
 
 Var Var::varOperator(const char *op, const Var &a) {
@@ -228,8 +244,12 @@ void SetContext(const char *ctx) {
   EngineContext::SetContext(std::hash<const char *>()(ctx));
 }
 
-void SetOperatorFunc(const OpFunc &func, const char *op,
-                     const TypeList &types) {
+void SetInitializerFunc(const InitFunc &func, TypeInfo type) {
+  auto *ctx = EngineContext::GetContext();
+  ctx->setInitFunc(func, type);
+}
+
+void SetOperatorFunc(OpFunc func, const char *op, const TypeList &types) {
   auto *ctx = EngineContext::GetContext();
   ctx->setOpFunc(func, op, types);
 }
@@ -239,6 +259,11 @@ void SetOperatorFunc(const OpFunc &func, const char *op,
 class CustomData {};
 
 void Test() {
+  SetInitializerFunc<int>([](Data &&data) {
+    double v = (*data.ptr<int>());
+    return Data(v);
+  });
+
   SetOperatorFunc<double, double>(
       [](const Args &args) {
         return Data{*args.at(0)->ptr<double>() + *args.at(1)->ptr<double>()};
@@ -248,7 +273,7 @@ void Test() {
   double aaa;
   Data asd(aaa);
 
-  Var a = 10.0;
+  Var a = 10;
   Var b = a;
   Var c = a + b;
   std::cout << c.value<double>() << std::endl;
