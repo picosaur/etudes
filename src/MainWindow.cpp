@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "backends/tex_inspect_opengl.h"
 #include "etgui/EtGuiWaveWidget.h"
+#include "etguiw/EtGuiClay.h"
 #include "etguiw/EtGuiDsp.h"
 #include "etguiw/EtGuiFire.h"
 #include "etguiw/EtGuiHttpWidget.h"
@@ -24,6 +25,7 @@ public:
   EtGuiw::DspGui::DemoWidget dspWidget;
   EtGuiw::SndGui::DemoWidget sndWidget;
   EtGuiw::FireGui::DemoWidget fireDemo;
+  EtGuiw::ClayGui::DemoWidget clayDemo;
 
   int httpTicks{};
   int mapTicks{};
@@ -83,11 +85,21 @@ MainWindow::MainWindow() : impl_{std::make_unique<Impl>()} {
          // auto toc = SDL_GetTicks();
        }},
 
-      {"Fire", "MainDockSpace", [&]() {
+      {"Fire", "MainDockSpace",
+       [&]() {
          // auto tic = SDL_GetTicks();
          impl_->fireDemo.show();
          // auto toc = SDL_GetTicks();
-       }}};
+       }},
+
+      {"Clay", "MainDockSpace",
+       [&]() {
+         // auto tic = SDL_GetTicks();
+         impl_->clayDemo.show();
+         // auto toc = SDL_GetTicks();
+       }}
+
+  };
 
   impl_->params.callbacks.ShowGui = [&]() {};
 

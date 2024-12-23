@@ -19,3 +19,6 @@
 [submodule "external/ImGuiColorTextEdit"]
 	path = external/ImGuiColorTextEdit
 	url = git@github.com:pthom/ImGuiColorTextEdit.git
+[submodule "external/clay"]
+	path = external/clay
+	url = git@github.com:nicbarker/clay.git

@@ -17,6 +17,8 @@ set(HELLOIMGUI_HAS_OPENGL3 ON CACHE INTERNAL "" FORCE)
 include(external/imguiextras.cmake)
 add_subdirectory(external/hello_imgui)
 
+include(external/clay.cmake)
+
 if(ETSND_BACKEND MATCHES "MINIAUDIO")
     add_subdirectory(external/miniaudio)
 endif()
