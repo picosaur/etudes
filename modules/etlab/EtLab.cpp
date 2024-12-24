@@ -156,11 +156,11 @@ public:
 class Engine {
   OwningMaker<Data> datas_;
   FunctionList<InitFunc> inits_;
-  FunctionList<OpFunc> ops_;
+  FunctionList<OperFunc> opers_;
 
 public:
   Data *makeData() { return datas_.make(); }
-  Data *makeData(Data &&data) { return datas_.make(std::move(data)); }
+  Data *makeData(Data &&data) { return datas_.make(std::forward<Data>(data)); }
   void acquireData(Data *data) { datas_.acquire(data); }
   void releaseData(Data *data) { datas_.release(data); }
 
@@ -178,19 +178,19 @@ public:
 
   static Data BypassInit(Data &&data) { return std::forward<Data>(data); }
 
-  void setOpFunc(OpFunc func, const char *op, const TypeList &types) {
-    ops_.insert(hash_combine_list(hash_combine(0, op), types), func);
+  void setOpFunc(OperFunc func, const char *op, const TypeList &types) {
+    opers_.insert(hash_combine_list(hash_combine(0, op), types), func);
   }
 
-  OpFunc getOpFunc(const char *op, const TypeList &types) {
-    auto it = ops_.find(hash_combine_list(hash_combine(0, op), types));
-    if (ops_.isFound(it)) {
+  OperFunc getOpFunc(const char *op, const TypeList &types) {
+    auto it = opers_.find(hash_combine_list(hash_combine(0, op), types));
+    if (opers_.isFound(it)) {
       return (it->second);
     }
     return DummyBinOp;
   }
 
-  static Data DummyBinOp(const Args &args) { return {}; }
+  static Data DummyBinOp(const ArgsList &args) { return {}; }
 };
 
 using EngineContext = SelectableContext<Engine>;
@@ -227,10 +227,16 @@ void Var::initData(Data &&data) {
   data_ = ctx->makeData(initFunc(std::forward<Data>(data)));
 }
 
-Var Var::varOperator(const char *op, const Var &a) {
+Var Var::unaryOperator(const char *op) const {
   auto ctx = EngineContext::GetContext();
-  auto func = ctx->getOpFunc(op, {data_->typeInfo(), a.data_->typeInfo()});
-  return func({data_, a.data_});
+  auto func = ctx->getOpFunc(op, {data_->typeInfo()});
+  return func(ArgsList{data_});
+}
+
+Var Var::binaryOperator(const char *op, const Var &arg) const {
+  auto ctx = EngineContext::GetContext();
+  auto func = ctx->getOpFunc(op, {data_->typeInfo(), arg.data_->typeInfo()});
+  return func(ArgsList{data_, arg.data_});
 }
 
 std::ostream &operator<<(std::ostream &os, const Var &var) {
@@ -249,7 +255,7 @@ void SetInitializerFunc(const InitFunc &func, TypeInfo type) {
   ctx->setInitFunc(func, type);
 }
 
-void SetOperatorFunc(OpFunc func, const char *op, const TypeList &types) {
+void SetOperatorFunc(OperFunc func, const char *op, const TypeList &types) {
   auto *ctx = EngineContext::GetContext();
   ctx->setOpFunc(func, op, types);
 }
@@ -264,8 +270,12 @@ void Test() {
     return Data(v);
   });
 
+  SetOperatorFunc<double>(
+      [](const ArgsList &args) { return Data{-(*args.at(0)->ptr<double>())}; },
+      "-");
+
   SetOperatorFunc<double, double>(
-      [](const Args &args) {
+      [](const ArgsList &args) {
         return Data{*args.at(0)->ptr<double>() + *args.at(1)->ptr<double>()};
       },
       "+");
@@ -274,8 +284,8 @@ void Test() {
   Data asd(aaa);
 
   Var a = 10;
-  Var b = a;
-  Var c = a + b;
+  Var b = -a;
+  Var c = 11 + a + b;
   std::cout << c.value<double>() << std::endl;
 }
 

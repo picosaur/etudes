@@ -47,16 +47,6 @@ public:
   Data(const Data &other) = delete;
   Data &operator=(const Data &other) = delete;
 
-  // deafult deleter
-  template <typename T> static void CastDelete(void *p) {
-    delete static_cast<T *>(p);
-  }
-
-  // deafult copier
-  template <typename T> static void *CastCopy(void *p) {
-    return new T(*static_cast<T *>(p)); // call copy constructor
-  }
-
   // clone method
   Data clone() const {
     Data other;
@@ -67,6 +57,21 @@ public:
     other.copier_ = copier_;
     other.value_ = copier_(value_);
     return other;
+  }
+
+  // type properties
+  const std::type_info *typeInfo() const { return typeInfo_; }
+  std::size_t typeSize() const { return typeSize_; }
+  std::size_t typeAlign() const { return typeAlign_; }
+
+  // deafult deleter
+  template <typename T> static void CastDelete(void *p) {
+    delete static_cast<T *>(p); // call delete
+  }
+
+  // deafult copier
+  template <typename T> static void *CastCopy(void *p) {
+    return new T(*static_cast<T *>(p)); // call copy constructor
   }
 
   // any-type constructor
@@ -83,11 +88,6 @@ public:
     value_ = new CleanT(std::forward<T>(value));
   }
 
-  // type properties
-  const std::type_info *typeInfo() const { return typeInfo_; }
-  std::size_t typeSize() const { return typeSize_; }
-  std::size_t typeAlign() const { return typeAlign_; }
-
   // data pointer
   template <typename T> T *ptr() const { return static_cast<T *>(value_); }
 };
@@ -98,7 +98,6 @@ class Var {
   Data *data_{};
   void initEmptyData();
   void initData(Data &&data);
-  Var varOperator(const char *op, const Var &a);
 
   friend std::ostream &operator<<(std::ostream &os, const Var &var);
 
@@ -108,6 +107,10 @@ public:
 
   Var(const Var &arg);
   void operator=(const Var &arg);
+
+  // execute operator
+  Var unaryOperator(const char *op) const;
+  Var binaryOperator(const char *op, const Var &arg) const;
 
   // any-type constructor
   template <typename T, typename CleanT = std::decay_t<T>,
@@ -123,36 +126,35 @@ public:
     }
     throw(std::runtime_error("Var::value unexpected conversion"));
   }
-
-  // operators
-  template <typename T> Var operator+(const T &a) {
-    return varOperator("+", a);
-  }
-
-  template <typename T> Var operator-(const T &a) {
-    return varOperator("-", a);
-  }
 };
+
+// Var unary operators
+inline Var operator-(const Var &a) { return a.unaryOperator("-"); }
+
+// Var binary operators
+inline Var operator+(const Var &a, const Var &b) {
+  return a.binaryOperator("+", b);
+}
 
 std::ostream &operator<<(std::ostream &os, const Var &var);
 
 // Functions
 // ----------------------------------------------------------------------------
-using Args = std::vector<Data *>;
 using TypeInfo = const std::type_info *;
 using TypeList = std::initializer_list<TypeInfo>;
-typedef Data (*OpFunc)(const Args &args);
+using ArgsList = std::vector<Data *>;
+typedef Data (*OperFunc)(const ArgsList &args);
 typedef Data (*InitFunc)(Data &&data);
 
 void SetContext(const char *ctx);
 void SetInitializerFunc(const InitFunc &func, TypeInfo type);
-void SetOperatorFunc(OpFunc func, const char *op, const TypeList &types);
+void SetOperatorFunc(OperFunc func, const char *op, const TypeList &types);
 
 template <typename T> void SetInitializerFunc(InitFunc func) {
   SetInitializerFunc(func, &typeid(T));
 }
 
-template <typename... T> void SetOperatorFunc(OpFunc func, const char *op) {
+template <typename... T> void SetOperatorFunc(OperFunc func, const char *op) {
   SetOperatorFunc(func, op, TypeList{&typeid(T)...});
 }
 
